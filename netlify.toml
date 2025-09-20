@@ -1,0 +1,20 @@
+[build]
+  publish = "public"
+  command = ""
+
+# Replace the URL below with your deployed backend base URL (e.g., Render)
+# Example: https://smartfee-backend.onrender.com
+[[redirects]]
+  from = "/*"
+  to = "https://smartfee-backend.example.com/:splat"
+  status = 200
+  force = true
+
+# Optional: set common security headers for all routes
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    Content-Security-Policy = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://smartfee-backend.example.com; connect-src 'self' https://smartfee-backend.example.com; img-src 'self' data: blob: https://smartfee-backend.example.com;"

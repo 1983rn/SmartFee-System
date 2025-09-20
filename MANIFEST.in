@@ -1,0 +1,9 @@
+include README.md
+include requirements.txt
+include runtime.txt
+include .env.example
+include *.yaml
+include *.sh
+recursive-include app/templates *
+recursive-include app/static *
+recursive-include migrations *

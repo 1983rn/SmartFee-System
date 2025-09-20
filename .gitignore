@@ -1,0 +1,45 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Byte-compiled/optimized files
+__pycache__/
+*.py[cod]
+
+# SQLite database in the instance folder
+instance/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Production files
+gunicorn_*.log
+*.log
+
+# PyInstaller build files
+build/
+dist/
+*.spec
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local development
+*.db
+*.sqlite3
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
