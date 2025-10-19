@@ -1,0 +1,38 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: smartfee-revenue
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: "python -m pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt && python build.py"
+    startCommand: "gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    envVars:
+      - key: FLASK_APP
+        value: "wsgi.py"
+      - key: FLASK_ENV
+        value: "production"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smartfee-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: "true"
+      - key: DEFAULT_USERNAME
+        value: "CWED"
+      - key: DEFAULT_PASSWORD
+        value: "RNTECH"
+      - key: DEV_USERNAME
+        value: "CWED"
+      - key: DEV_PASSWORD
+        value: "RNTECH"
+    autoDeploy: true
+
+databases:
+  - name: smartfee-db
+    databaseName: smartfee_revenue
+    user: smartfee_user
+    region: oregon
+    plan: free

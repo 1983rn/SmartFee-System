@@ -1,0 +1,19 @@
+# Core dependencies
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-WTF==1.2.2
+python-dotenv==1.0.0
+SQLAlchemy==2.0.42
+WTForms==3.2.1
+Werkzeug==2.3.7
+
+# Production server
+gunicorn==21.2.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Security
+bcrypt==4.1.2
+python-jose==3.3.0
+fpdf2==2.8.4
