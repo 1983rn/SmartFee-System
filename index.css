@@ -1,0 +1,44 @@
+/* Enhanced Income Management System Styles */
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  margin: auto;
+}
+
+/* Custom styles for income management enhancements */
+.income-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.income-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.customer-info {
+  border-left: 3px solid #1976d2;
+  padding-left: 12px;
+}
+
+.income-type-info {
+  border-left: 3px solid #ed6c02;
+  padding-left: 12px;
+}
+
+.total-summary {
+  background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+  color: white;
+  border-radius: 8px;
+}
+
+.enhancement-note {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  color: white;
+  border-radius: 8px;
+}

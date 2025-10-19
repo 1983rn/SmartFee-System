@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: smartfee-revenue
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    environment:
+      - FLASK_APP=wsgi.py
+      - FLASK_ENV=production
+      - PORT=${PORT:-5000}
+      - WORKERS=2
+      - TIMEOUT=120
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEFAULT_USERNAME=${DEFAULT_USERNAME:-CWED}
+      - DEFAULT_PASSWORD=${DEFAULT_PASSWORD:-RNTECH}
+      - DEV_USERNAME=${DEV_USERNAME:-CWED}
+      - DEV_PASSWORD=${DEV_PASSWORD:-RNTECH}
+    volumes:
+      - static_volume:/app/static
+      - instance_volume:/app/instance
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-5000}/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - smartfee_net
+
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_NAME:-smartfee_revenue}
+      - POSTGRES_USER=${DB_USER:-smartfee_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-smartfee_user} -d ${DB_NAME:-smartfee_revenue}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartfee_net
+
+volumes:
+  postgres_data:
+  static_volume:
+  instance_volume:
+
+networks:
+  smartfee_net:
+    driver: bridge
