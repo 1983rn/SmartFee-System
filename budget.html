@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Management - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calculator me-2"></i>Budget Management</h2>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print me-2"></i>Print Budget
+    </button>
+</div>
+
+<!-- Budget vs Income Summary -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-coins me-2"></i>Total Income Available</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>PTA Income:</span>
+                            <span class="text-success">MK{{ pta_income|comma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>SDF Income:</span>
+                            <span class="text-success">MK{{ sdf_income|comma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Boarding Fee Income:</span>
+                            <span class="text-success">MK{{ boarding_income|comma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Other Income:</span>
+                            <span class="text-success">MK{{ other_income|comma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span><strong>Total Available:</strong></span>
+                            <span class="text-success"><strong>MK{{ total_income|comma }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header {% if total_budget > total_income %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Budget Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Total Proposed Budget:</span>
+                            <span class="{% if total_budget > total_income %}text-danger{% else %}text-primary{% endif %}">MK{{ total_budget|comma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Available Income:</span>
+                            <span class="text-success">MK{{ total_income|comma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span><strong>Balance:</strong></span>
+                            <span class="{% if total_budget > total_income %}text-danger{% else %}text-success{% endif %}">
+                                <strong>MK{{ (total_income - total_budget)|comma }}</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% if total_budget > total_income %}
+                <div class="alert alert-danger mt-3 mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> Budget exceeds available income by MK{{ (total_budget - total_income)|comma }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Budget Planning Tab -->
+<div class="card mb-4">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="budgetTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab">
+                    <i class="fas fa-edit me-2"></i>Budget Planning
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tracking-tab" data-bs-toggle="tab" data-bs-target="#tracking" type="button" role="tab">
+                    <i class="fas fa-chart-line me-2"></i>Spending Tracking
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="budgetTabContent">
+            <!-- Budget Planning Tab -->
+            <div class="tab-pane fade show active" id="planning" role="tabpanel">
+                <!-- Add New Budget Item Form -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Budget Item</h6>
+                        <small class="text-muted">Note: Budget items can be repeated as needed</small>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('add_budget_item') }}" class="row g-3">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="col-md-8">
+                                <label for="activity_service" class="form-label">Activity/Service</label>
+                                <select class="form-select" name="activity_service" required>
+                                    <option value="">Select Activity/Service</option>
+                                    <optgroup label="(A). Facilitating Office Operations">
+                                        <option value="1204 Attending Management Meetings">1204 - Attending Management Meetings</option>
+                                        <option value="1204 Wages for support staff">1204 - Wages for support staff</option>
+                                        <option value="1203 public transport">1203 - Public Transport</option>
+                                        <option value="1401 heating and lighting">1401 - Heating and Lighting</option>
+                                        <option value="1402 Telephone charges">1402 - Telephone Charges</option>
+                                        <option value="1405 water and sanitation">1405 - Water and Sanitation</option>
+                                        <option value="1502 consumable stores">1502 - Consumable Stores</option>
+                                        <option value="1504 postage">1504 - Postage</option>
+                                        <option value="1505 printing cost">1505 - Printing Cost</option>
+                                        <option value="1406 publication and advertisement">1406 - Publication and Advertisement</option>
+                                        <option value="1506 stationery">1506 - Stationery</option>
+                                        <option value="1507 uniform and protective wear">1507 - Uniform and Protective Wear</option>
+                                        <option value="2401 Fuel and Lubricants">2401 - Fuel and Lubricants</option>
+                                        <option value="2321 Subscriptions">2321 - Subscriptions</option>
+                                        <option value="0251 purchase of plant and office equipment">0251 - Purchase of Plant and Office Equipment</option>
+                                    </optgroup>
+                                    <optgroup label="(B). Management of School Based and National Examinations">
+                                        <option value="1803-examinations">1803 - Examinations</option>
+                                        <option value="2401 fuel or 1203 public transport">2401 - Fuel or 1203 - Public Transport</option>
+                                        <option value="1204 Subsistence allowance">1204 - Subsistence Allowance</option>
+                                    </optgroup>
+                                    <optgroup label="(C). SMASSE">
+                                        <option value="2401 fuel or 1203 public transport">2401 - Fuel or 1203 - Public Transport</option>
+                                        <option value="1204 Subsistence allowance">1204 - Subsistence Allowance</option>
+                                    </optgroup>
+                                    <optgroup label="(D). Sporting Activities">
+                                        <option value="1805-sporting equipment">1805 - Sporting Equipment</option>
+                                        <option value="2401 fuel or 1203 public transport">2401 - Fuel or 1203 - Public Transport</option>
+                                        <option value="1204 Subsistence allowance">1204 - Subsistence Allowance</option>
+                                    </optgroup>
+                                    <optgroup label="(E). Support to SNE">
+                                        <option value="1806- purchase of special needs materials">1806 - Purchase of Special Needs Materials</option>
+                                    </optgroup>
+                                    <optgroup label="(F). Procurement of Teaching and Learning Materials">
+                                        <option value="1807- science consumables">1807 - Science Consumables</option>
+                                        <option value="1804- text books">1804 - Text Books</option>
+                                        <option value="1808- purchase of school supplies">1808 - Purchase of School Supplies</option>
+                                        <option value="1614- HIV/AIDS services">1614 - HIV/AIDS Services</option>
+                                        <option value="1601- drugs">1601 - Drugs</option>
+                                    </optgroup>
+                                    <optgroup label="(G). Maintenance of Infrastructure">
+                                        <option value="2501- maintenance of buildings">2501 - Maintenance of Buildings</option>
+                                        <option value="2504-maintenance of water supplies">2504 - Maintenance of Water Supplies</option>
+                                    </optgroup>
+                                    <optgroup label="(H). COSOMA">
+                                        <option value="2321- Subscription">2321 - Subscription</option>
+                                    </optgroup>
+                                    <optgroup label="Computer Service Subscription">
+                                        <option value="2321- Subscription">2321 - Subscription</option>
+                                    </optgroup>
+                                    <optgroup label="(I). In-service Training for Teachers">
+                                        <option value="1502- consumables">1502 - Consumables</option>
+                                        <option value="1204- subsistence Allowances">1204 - Subsistence Allowances</option>
+                                        <option value="1203 public transport or 2401 fuel">1203 - Public Transport or 2401 - Fuel</option>
+                                    </optgroup>
+                                    <optgroup label="(J). Processing of Payment Vouchers">
+                                        <option value="1204- subsistence Allowances">1204 - Subsistence Allowances</option>
+                                        <option value="1203 public transport or 2401 fuel">1203 - Public Transport or 2401 - Fuel</option>
+                                    </optgroup>
+                                    <optgroup label="(K). Provision of Sanitary Pads to Girls in Secondary Schools">
+                                        <option value="1502- consumables">1502 - Consumables</option>
+                                    </optgroup>
+                                    <optgroup label="(L). Provision of PPEs to Schools">
+                                        <option value="1502- consumables">1502 - Consumables</option>
+                                    </optgroup>
+                                    <optgroup label="(M). Provision of Food and Other Boarding Necessities to Learners">
+                                        <option value="1801- boarding expenses">1801 - Boarding Expenses</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="proposed_allocation" class="form-label">Proposed Allocation (MK)</label>
+                                <input type="number" class="form-control" name="proposed_allocation" step="0.01" min="0" value="0.00">
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Budget Items Table -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Budget Items</h6>
+                    <button onclick="printBudgetTable()" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-print me-2"></i>Print Budget Items
+                    </button>
+                </div>
+                <form method="POST" action="{{ url_for('update_budget') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="table-responsive" id="budgetTable">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Activity/Service</th>
+                                    <th>Proposed Allocation (MK)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in budget_items %}
+                                <tr>
+                                    <td>{{ item.activity_service }}</td>
+                                    <td>
+                                        <input type="number" 
+                                               name="allocation_{{ item.id }}" 
+                                               value="{{ item.proposed_allocation }}" 
+                                               class="form-control" 
+                                               step="0.01" 
+                                               min="0"
+                                               onchange="updateTotal()">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteItem({{ item.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not budget_items %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="fas fa-plus-circle fa-2x mb-2"></i><br>
+                                        No budget items yet. Use the form above to add your first budget item.
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot class="table-secondary">
+                                <tr>
+                                    <th>Grand Total</th>
+                                    <th id="grandTotal">MK{{ total_budget|comma }}</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Update Budget
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Spending Tracking Tab -->
+            <div class="tab-pane fade" id="tracking" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Spending Tracking</h6>
+                    <button onclick="printSpendingTable()" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-print me-2"></i>Print Spending Report
+                    </button>
+                </div>
+                <div class="table-responsive" id="spendingTable">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Activity/Service</th>
+                                <th>Budgeted Amount</th>
+                                <th>Amount Spent</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in spending_data %}
+                            <tr>
+                                <td>{{ data.activity }}</td>
+                                <td class="text-primary">MK{{ data.budgeted|comma }}</td>
+                                <td class="text-danger">MK{{ data.spent|comma }}</td>
+                                <td class="{% if data.balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    MK{{ data.balance|comma }}
+                                </td>
+                                <td>
+                                    {% if data.spent == 0 %}
+                                        <span class="badge bg-secondary">Not Started</span>
+                                    {% elif data.balance > 0 %}
+                                        <span class="badge bg-success">Within Budget</span>
+                                    {% elif data.balance == 0 %}
+                                        <span class="badge bg-warning">Fully Utilized</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Over Budget</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not spending_data %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-chart-line fa-2x mb-2"></i><br>
+                                    No budget items to track. Add budget items first.
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
+<script>
+function updateTotal() {
+    let total = 0;
+    const inputs = document.querySelectorAll('input[name^="allocation_"]');
+    inputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('grandTotal').textContent = 'MK' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    // Update budget status warning
+    const totalIncome = parseFloat('{{ total_income|default(0) }}');
+    if (total > totalIncome) {
+        document.querySelector('.card-header.bg-success')?.classList.replace('bg-success', 'bg-danger');
+    } else {
+        document.querySelector('.card-header.bg-danger')?.classList.replace('bg-danger', 'bg-success');
+    }
+}
+
+function deleteItem(itemId) {
+    if (confirm('Are you sure you want to delete this budget item?')) {
+        const form = document.getElementById('deleteForm');
+        form.action = '/delete_budget_item/' + itemId;
+        form.submit();
+    }
+}
+
+function printBudgetTable() {
+    const printContent = document.getElementById('budgetTable').outerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Budget Items</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .table-dark th { background-color: #343a40; color: white; }
+                .table-secondary th { background-color: #6c757d; color: white; }
+                input { border: none; background: transparent; width: 100%; }
+                .btn { display: none; }
+            </style>
+        </head>
+        <body>
+            <h2>Budget Items</h2>
+            ${printContent}
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function printSpendingTable() {
+    const printContent = document.getElementById('spendingTable').outerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Spending Tracking Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .table-dark th { background-color: #343a40; color: white; }
+                .text-primary { color: #0d6efd; }
+                .text-danger { color: #dc3545; }
+                .text-success { color: #198754; }
+                .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+                .bg-secondary { background-color: #6c757d; color: white; }
+                .bg-success { background-color: #198754; color: white; }
+                .bg-warning { background-color: #ffc107; color: black; }
+                .bg-danger { background-color: #dc3545; color: white; }
+            </style>
+        </head>
+        <body>
+            <h2>Spending Tracking Report</h2>
+            ${printContent}
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+</script>
+
+<style>
+@media print {
+    .btn, .navbar, .sidebar { display: none !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; }
+    .card { border: none !important; box-shadow: none !important; }
+    .card-header { background: #f8f9fa !important; color: #000 !important; }
+    
+    /* Hide everything after the Balance section */
+    .card.mb-4:nth-of-type(3) { display: none !important; }
+    #deleteForm { display: none !important; }
+    script { display: none !important; }
+}
+</style>
+{% endblock %}

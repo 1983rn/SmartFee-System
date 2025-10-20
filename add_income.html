@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Record Payment - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus-circle me-2"></i>Record Payment</h2>
+    <a href="{{ url_for('income') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Income
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Payment Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="student_name_search" class="form-label">Student Name *</label>
+                                <select class="form-select" id="student_name_search" name="student_name_search" required>
+                                    <option value="">Select Student Name</option>
+                                    {% for student in students %}
+                                    <option value="{{ student.decrypted_name }}" data-student-id="{{ student.decrypted_student_id }}">{{ student.decrypted_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Search and select student by name</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">Student ID</label>
+                                <input type="text" class="form-control" id="student_id" name="student_id" readonly 
+                                       placeholder="Auto-generated from student name">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="payment_date" class="form-label">Payment Date *</label>
+                                <input type="date" class="form-control" id="payment_date" name="payment_date" 
+                                       value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="deposit_ref_no" class="form-label">Deposit Ref No. *</label>
+                                <input type="text" class="form-control" id="deposit_ref_no" name="deposit_ref_no" 
+                                       placeholder="Enter deposit reference number" required>
+                                <div class="form-text">Bank deposit slip reference number</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fee Payment Fields -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Fee Payments</h6>
+                            <small class="text-muted">Enter amounts paid for each fee type (leave blank if no payment)</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="pta_amount" class="form-label">PTA Fund (MK)</label>
+                                        <input type="number" step="0.01" class="form-control" id="pta_amount" 
+                                               name="pta_amount" min="0" placeholder="0.00">
+                                        <div class="form-text">Current Balance: <span id="pta_balance" class="text-muted">-</span></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="sdf_amount" class="form-label">SDF (MK)</label>
+                                        <input type="number" step="0.01" class="form-control" id="sdf_amount" 
+                                               name="sdf_amount" min="0" placeholder="0.00">
+                                        <div class="form-text">Current Balance: <span id="sdf_balance" class="text-muted">-</span></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="boarding_amount" class="form-label">Boarding Fee (MK)</label>
+                                        <input type="number" step="0.01" class="form-control" id="boarding_amount" 
+                                               name="boarding_amount" min="0" placeholder="0.00">
+                                        <div class="form-text">Current Balance: <span id="boarding_balance" class="text-muted">-</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Total Payment:</strong> <span id="total_payment">MK 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary me-md-2" onclick="history.back()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Record Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Student data for balance checking
+const students = JSON.parse('{{ students_json|safe }}');
+
+// Function to update student balances and ID
+function updateStudentBalances(studentName) {
+    const student = students.find(s => s.name === studentName);
+    if (!student) {
+        document.getElementById('student_id').value = '';
+        document.getElementById('pta_balance').textContent = '-';
+        document.getElementById('sdf_balance').textContent = '-';
+        document.getElementById('boarding_balance').textContent = '-';
+        return;
+    }
+    
+    // Update student ID field
+    document.getElementById('student_id').value = student.student_id;
+    
+    const ptaBalance = Math.max(0, student.pta_required - student.pta_amount_paid);
+    const sdfBalance = Math.max(0, student.sdf_required - student.sdf_amount_paid);
+    const boardingBalance = Math.max(0, student.boarding_required - student.boarding_amount_paid);
+    
+    document.getElementById('pta_balance').textContent = 'MK ' + ptaBalance.toLocaleString();
+    document.getElementById('sdf_balance').textContent = 'MK ' + sdfBalance.toLocaleString();
+    document.getElementById('boarding_balance').textContent = 'MK ' + boardingBalance.toLocaleString();
+}
+
+// Function to calculate total payment
+function updateTotalPayment() {
+    const ptaAmount = parseFloat(document.getElementById('pta_amount').value) || 0;
+    const sdfAmount = parseFloat(document.getElementById('sdf_amount').value) || 0;
+    const boardingAmount = parseFloat(document.getElementById('boarding_amount').value) || 0;
+    
+    const total = ptaAmount + sdfAmount + boardingAmount;
+    document.getElementById('total_payment').textContent = 'MK ' + total.toLocaleString();
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Update balances when student name is selected
+    document.getElementById('student_name_search').addEventListener('change', function() {
+        updateStudentBalances(this.value);
+    });
+    
+    // Update total when amounts change
+    var amountFields = ['pta_amount', 'sdf_amount', 'boarding_amount'];
+    for (var i = 0; i < amountFields.length; i++) {
+        document.getElementById(amountFields[i]).addEventListener('input', updateTotalPayment);
+    }
+    
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const ptaAmount = parseFloat(document.getElementById('pta_amount').value) || 0;
+        const sdfAmount = parseFloat(document.getElementById('sdf_amount').value) || 0;
+        const boardingAmount = parseFloat(document.getElementById('boarding_amount').value) || 0;
+        
+        if (ptaAmount + sdfAmount + boardingAmount <= 0) {
+            e.preventDefault();
+            alert('Please enter at least one payment amount.');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

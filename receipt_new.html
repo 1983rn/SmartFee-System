@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt - SmartFee System{% endblock %}
+
+{% block content %}
+<!-- Screen only buttons -->
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('payment_status') }}" style="text-decoration: none; background: #6c757d; color: white; padding: 8px 16px; border-radius: 4px; margin-right: 10px;">← Back</a>
+    <button onclick="window.print()" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">🖨️ Print Receipt</button>
+</div>
+
+{% for receipt in receipts %}
+<!-- Receipt Content -->
+<div style="border: 2px solid black; padding: 20px; margin-bottom: 30px; font-family: Arial, sans-serif;">
+    
+    <!-- Header -->
+    <div style="text-align: center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 20px;">
+        <h1 style="margin: 0; font-size: 24px;">{{ school_name }}</h1>
+        <div style="margin: 10px 0; padding: 8px 16px; border: 2px solid black; display: inline-block; background: white;">
+            <strong style="font-size: 18px;">Receipt No: {{ receipt.receipt_no }}</strong>
+        </div>
+        <p style="margin: 5px 0; font-size: 16px;">Official Payment Receipt</p>
+    </div>
+    
+    <!-- Student Information -->
+    <div style="margin-bottom: 20px;">
+        <h3 style="border-bottom: 1px solid black; padding-bottom: 5px;">Student Information</h3>
+        <p><strong>Student ID:</strong> {{ receipt.student_id }}</p>
+        <p><strong>Name:</strong> {{ receipt.student_name }}</p>
+        <p><strong>Form/Class:</strong> {{ receipt.form_class }}</p>
+    </div>
+    
+    <!-- Receipt Details -->
+    <div style="margin-bottom: 20px;">
+        <h3 style="border-bottom: 1px solid black; padding-bottom: 5px;">Receipt Details</h3>
+        <p><strong>Payment Date:</strong> {{ receipt.payment_date.strftime('%B %d, %Y') }}</p>
+        <p><strong>Deposit Slip Ref:</strong> {{ receipt.deposit_slip_ref }}</p>
+        <p><strong>Installment:</strong> {{ receipt.installment_number }}/2</p>
+    </div>
+    
+    <!-- Payment Details -->
+    <div style="margin-bottom: 20px;">
+        <h3 style="border-bottom: 1px solid black; padding-bottom: 5px;">Payment Details</h3>
+        
+        {% set pta_receipts = receipts | selectattr('fee_type', 'equalto', 'PTA') | list %}
+        {% set sdf_receipts = receipts | selectattr('fee_type', 'equalto', 'SDF') | list %}
+        {% set boarding_receipts = receipts | selectattr('fee_type', 'equalto', 'Boarding') | list %}
+        
+        <div style="border: 1px solid black;">
+            <div style="background: #f0f0f0; padding: 8px; border-bottom: 1px solid black; font-weight: bold;">
+                <span style="display: inline-block; width: 30%;">Fee Type</span>
+                <span style="display: inline-block; width: 35%;">Amount Paid</span>
+                <span style="display: inline-block; width: 35%;">Balance</span>
+            </div>
+            
+            {% if pta_receipts %}
+            <div style="padding: 8px; border-bottom: 1px solid black;">
+                <span style="display: inline-block; width: 30%; background: #007bff; color: white; padding: 4px 8px; border-radius: 3px;">PTA</span>
+                <span style="display: inline-block; width: 35%; font-weight: bold; color: green;">MK{{ "%.2f"|format(pta_receipts | sum(attribute='amount_paid')) }}</span>
+                <span style="display: inline-block; width: 35%;">MK{{ "%.2f"|format(pta_receipts[-1].balance if pta_receipts else 0) }}</span>
+            </div>
+            {% endif %}
+            
+            {% if sdf_receipts %}
+            <div style="padding: 8px; border-bottom: 1px solid black;">
+                <span style="display: inline-block; width: 30%; background: #17a2b8; color: white; padding: 4px 8px; border-radius: 3px;">SDF</span>
+                <span style="display: inline-block; width: 35%; font-weight: bold; color: green;">MK{{ "%.2f"|format(sdf_receipts | sum(attribute='amount_paid')) }}</span>
+                <span style="display: inline-block; width: 35%;">MK{{ "%.2f"|format(sdf_receipts[-1].balance if sdf_receipts else 0) }}</span>
+            </div>
+            {% endif %}
+            
+            {% if boarding_receipts %}
+            <div style="padding: 8px;">
+                <span style="display: inline-block; width: 30%; background: #ffc107; color: black; padding: 4px 8px; border-radius: 3px;">Boarding</span>
+                <span style="display: inline-block; width: 35%; font-weight: bold; color: green;">MK{{ "%.2f"|format(boarding_receipts | sum(attribute='amount_paid')) }}</span>
+                <span style="display: inline-block; width: 35%;">MK{{ "%.2f"|format(boarding_receipts[-1].balance if boarding_receipts else 0) }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Summary -->
+    <div style="margin-bottom: 20px;">
+        <h3 style="border-bottom: 1px solid black; padding-bottom: 5px;">Payment Summary</h3>
+        {% set total_paid = (pta_receipts | sum(attribute='amount_paid')) + (sdf_receipts | sum(attribute='amount_paid')) + (boarding_receipts | sum(attribute='amount_paid')) %}
+        {% set total_balance = (pta_receipts[-1].balance if pta_receipts else 0) + (sdf_receipts[-1].balance if sdf_receipts else 0) + (boarding_receipts[-1].balance if boarding_receipts else 0) %}
+        
+        <p><strong>Total Amount Paid:</strong> <span style="font-size: 18px; color: green; font-weight: bold;">MK{{ "%.2f"|format(total_paid) }}</span></p>
+        <p><strong>Fee Types:</strong> 
+            {% if pta_receipts %}<span style="background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">PTA</span>{% endif %}
+            {% if sdf_receipts %}<span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">SDF</span>{% endif %}
+            {% if boarding_receipts %}<span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">Boarding</span>{% endif %}
+        </p>
+        <p><strong>Total Remaining Balance:</strong> MK{{ "%.2f"|format(total_balance) }}</p>
+    </div>
+    
+    <!-- Footer -->
+    <div style="border-top: 2px solid black; padding-top: 15px; text-align: center;">
+        <p style="margin: 0 0 10px 0; font-size: 14px; line-height: 1.4;">
+            <strong>Note:</strong> This is an official receipt from RN_LAB_TECH. 
+            Please keep this receipt for your records. 
+            For any queries, please contact the school administration.
+        </p>
+        <p style="margin: 0; font-size: 12px; color: #666; font-style: italic;">
+            Generated by RN_LAB_TECH - {{ datetime.now().strftime('%B %d, %Y at %I:%M %p') }}
+        </p>
+    </div>
+    
+</div>
+{% endfor %}
+
+<style>
+@media print {
+    /* Hide screen-only elements */
+    div:first-child {
+        display: none !important;
+    }
+    
+    /* Ensure proper print layout */
+    body {
+        margin: 0;
+        padding: 10px;
+        font-size: 12pt;
+    }
+    
+    /* Make sure receipt container prints */
+    div[style*="border: 2px solid black"] {
+        page-break-after: always;
+        margin: 0;
+        padding: 15px;
+    }
+}
+</style>
+{% endblock %}

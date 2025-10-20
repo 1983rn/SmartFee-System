@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Debug Deposit Slips - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Debug Deposit Slip References</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <button id="checkReferences" class="btn btn-primary">Check Deposit Slip References</button>
+        </div>
+        <div class="col-md-6">
+            <button id="fixReferences" class="btn btn-warning">Fix Missing References</button>
+        </div>
+    </div>
+    
+    <div id="results" class="mt-4"></div>
+</div>
+
+<script>
+document.getElementById('checkReferences').addEventListener('click', function() {
+    fetch('/debug_deposit_slips')
+        .then(response => response.json())
+        .then(data => {
+            let html = `<h4>Found ${data.total_records} recent income records:</h4>`;
+            html += '<table class="table table-striped"><thead><tr><th>ID</th><th>Student ID</th><th>Date</th><th>Raw Reference</th><th>Decrypted Reference</th></tr></thead><tbody>';
+            
+            data.records.forEach(record => {
+                html += `<tr>
+                    <td>${record.id}</td>
+                    <td>${record.student_id}</td>
+                    <td>${record.payment_date}</td>
+                    <td>${record.raw_reference || 'NULL'}</td>
+                    <td>${record.decrypted_reference}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('results').innerHTML = `<div class="alert alert-danger">Error: ${error}</div>`;
+        });
+});
+
+document.getElementById('fixReferences').addEventListener('click', function() {
+    if (confirm('This will add default deposit slip references to records that are missing them. Continue?')) {
+        fetch('/fix_deposit_slips', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('results').innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            } else {
+                document.getElementById('results').innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            document.getElementById('results').innerHTML = `<div class="alert alert-danger">Error: ${error}</div>`;
+        });
+    }
+});
+</script>
+{% endblock %}

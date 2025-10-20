@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Fund Configuration - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit me-2"></i>Edit Fund Configuration</h2>
+    <a href="{{ url_for('fund_config') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Configuration
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Edit Fund Configuration Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="term_name" class="form-label">Term/Period Name *</label>
+                        <input type="text" class="form-control" id="term_name" name="term_name" 
+                               value="{{ decrypted_term_name }}"
+                               placeholder="e.g., Term 1 2025, First Semester 2025" required>
+                        <div class="form-text">Enter the term or period this configuration applies to</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="pta_amount" class="form-label">PTA Fund Required (MK)</label>
+                                <input type="number" class="form-control" id="pta_amount" name="pta_amount" 
+                                       value="{{ "%.2f"|format(config.pta_amount) }}"
+                                       step="0.01" min="0" required>
+                                <div class="form-text">Amount required for PTA Fund</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="sdf_amount" class="form-label">SDF Required (MK)</label>
+                                <input type="number" class="form-control" id="sdf_amount" name="sdf_amount" 
+                                       value="{{ "%.2f"|format(config.sdf_amount) }}"
+                                       step="0.01" min="0" required>
+                                <div class="form-text">Amount required for School Development Fund</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="boarding_amount" class="form-label">Boarding Fee Required (MK)</label>
+                                <input type="number" class="form-control" id="boarding_amount" name="boarding_amount" 
+                                       value="{{ "%.2f"|format(config.boarding_amount) }}"
+                                       step="0.01" min="0" required>
+                                <div class="form-text">Amount required for Boarding Fee (0 if not applicable)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Configuration Status</h6>
+                                <p class="mb-0">
+                                    {% if config.is_active %}
+                                    <span class="badge bg-success me-2">Active</span> This configuration is currently active and being used for fee calculations.
+                                    {% else %}
+                                    <span class="badge bg-secondary me-2">Inactive</span> This configuration is not currently active.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('fund_config') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Information</h5>
+            </div>
+            <div class="card-body">
+                <h6>Current Values</h6>
+                <ul class="list-unstyled">
+                    <li><strong>PTA Fund:</strong> MK{{ "%.2f"|format(config.pta_amount) }}</li>
+                    <li><strong>SDF:</strong> MK{{ "%.2f"|format(config.sdf_amount) }}</li>
+                    <li><strong>Boarding Fee:</strong> MK{{ "%.2f"|format(config.boarding_amount) }}</li>
+                    <li><strong>Total Required:</strong> MK{{ "%.2f"|format(config.pta_amount + config.sdf_amount + config.boarding_amount) }}</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Note:</strong> Changes to the active configuration will immediately affect fee calculations for all students.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-calculate total
+    function calculateTotal() {
+        const ptaAmount = parseFloat(document.getElementById('pta_amount').value) || 0;
+        const sdfAmount = parseFloat(document.getElementById('sdf_amount').value) || 0;
+        const boardingAmount = parseFloat(document.getElementById('boarding_amount').value) || 0;
+        const total = ptaAmount + sdfAmount + boardingAmount;
+        
+        // Update the total display in the info card
+        const totalElement = document.querySelector('.card-body ul li:last-child strong');
+        if (totalElement) {
+            totalElement.textContent = `Total Required: MK${total.toFixed(2)}`;
+        }
+    }
+
+    document.getElementById('pta_amount').addEventListener('input', calculateTotal);
+    document.getElementById('sdf_amount').addEventListener('input', calculateTotal);
+    document.getElementById('boarding_amount').addEventListener('input', calculateTotal);
+</script>
+{% endblock %}

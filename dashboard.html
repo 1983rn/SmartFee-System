@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SmartFee{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+    <span class="text-muted">Welcome, {{ session.username }}</span>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_students }}</h4>
+                        <p class="mb-0">Total Students</p>
+                    </div>
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ "%.2f"|format(total_income) }}</h4>
+                        <p class="mb-0">Total Income</p>
+                    </div>
+                    <i class="fas fa-arrow-up fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 id="expenditure-amount" style="display: none;">MK {{ "%.2f"|format(total_expenditure) }}</h4>
+                        <h4 id="expenditure-hidden" style="display: block;">****</h4>
+                        <p class="mb-0">Total Expenditure</p>
+                        <small class="text-light">Includes: Student fees + Other Income expenditures</small>
+                        <button id="view-details-btn" class="btn btn-sm btn-outline-light mt-2" onclick="toggleExpenditureDetails()">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                    <i class="fas fa-arrow-down fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-money-bill"></i> Recent Payments</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_payments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in recent_payments %}
+                                <tr>
+                                    <td>{{ payment.student_name }}</td>
+                                    <td>{{ "%.2f"|format(payment.amount_paid) }}</td>
+                                    <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent payments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-receipt"></i> Recent Expenditures</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_expenditures %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exp in recent_expenditures %}
+                                <tr>
+                                    <td>{{ exp.activity_service[:30] }}...</td>
+                                    <td><span class="expenditure-detail" style="display: none;">{{ "%.2f"|format(exp.amount_paid) }}</span><span class="expenditure-hidden">****</span></td>
+                                    <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent expenditures</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleExpenditureDetails() {
+    const amountElement = document.getElementById('expenditure-amount');
+    const hiddenElement = document.getElementById('expenditure-hidden');
+    const btnElement = document.getElementById('view-details-btn');
+    const tableDetails = document.querySelectorAll('.expenditure-detail');
+    const tableHidden = document.querySelectorAll('.expenditure-hidden');
+    
+    if (amountElement.style.display === 'none') {
+        amountElement.style.display = 'block';
+        hiddenElement.style.display = 'none';
+        tableDetails.forEach(el => el.style.display = 'inline');
+        tableHidden.forEach(el => el.style.display = 'none');
+        btnElement.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Details';
+    } else {
+        amountElement.style.display = 'none';
+        hiddenElement.style.display = 'block';
+        tableDetails.forEach(el => el.style.display = 'none');
+        tableHidden.forEach(el => el.style.display = 'inline');
+        btnElement.innerHTML = '<i class="fas fa-eye"></i> View Details';
+    }
+}
+</script>
+{% endblock %}

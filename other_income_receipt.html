@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Other Income Receipt - {{ school_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-receipt me-2"></i>Other Income Receipt</h2>
+    <div>
+        <a href="{{ url_for('print_other_income_receipt', income_id=other_income.id) }}" 
+           class="btn btn-primary me-2" target="_blank">
+            <i class="fas fa-print me-2"></i>Print Receipt
+        </a>
+        <a href="{{ url_for('income') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Income
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <!-- Receipt Header -->
+                <div class="position-relative mb-4">
+                    <!-- Receipt Number Stamp - Top Right -->
+                    <div class="position-absolute top-0 end-0">
+                        <div class="border border-3 border-danger p-3 bg-light" style="transform: rotate(-5deg); box-shadow: 2px 2px 8px rgba(0,0,0,0.3);">
+                            <div class="text-center">
+                                <strong class="text-danger">RECEIPT NO.</strong><br>
+                                <span class="text-danger fw-bold fs-5">{{ other_income.generate_receipt_number() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- School Header -->
+                    <div class="text-center" style="margin-right: 120px;">
+                        <h3>{{ school_name }}</h3>
+                        {% if school_address %}
+                        <p class="text-muted mb-2">{{ school_address }}</p>
+                        {% endif %}
+                        <h5>General Receipt</h5>
+                    </div>
+                </div>
+
+                <!-- Receipt Details -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> {{ other_income.date.strftime('%B %d, %Y') }}</p>
+                        <p><strong>Customer:</strong> {{ other_income.customer_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Income Type:</strong> {{ other_income.income_type }}</p>
+                        <p><strong>Receipt Date:</strong> {{ datetime.now().strftime('%B %d, %Y') }}</p>
+                    </div>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-end">Total Charge</th>
+                                <th class="text-end">Amount Paid</th>
+                                <th class="text-end">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ other_income.income_type }} - {{ other_income.customer_name }}</td>
+                                <td class="text-end">MK{{ '{:,.2f}'.format(other_income.total_charge) }}</td>
+                                <td class="text-end">MK{{ '{:,.2f}'.format(other_income.amount_paid) }}</td>
+                                <td class="text-end">MK{{ '{:,.2f}'.format(other_income.balance) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment Status -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert {% if other_income.balance == 0 %}alert-success{% else %}alert-warning{% endif %}">
+                            <strong>Payment Status:</strong> 
+                            {% if other_income.balance == 0 %}
+                                Paid in Full
+                            {% else %}
+                                Outstanding Balance: MK{{ '{:,.2f}'.format(other_income.balance) }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-end">
+                            <p><strong>Total Amount Paid:</strong></p>
+                            <h4 class="text-success">MK{{ '{:,.2f}'.format(other_income.amount_paid) }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-4 pt-4 border-top">
+                    {% if school_address %}
+                    <p class="text-muted small mb-2">
+                        <strong>School Address:</strong> {{ school_address }}
+                    </p>
+                    {% endif %}
+                    <p class="text-muted small">
+                        Generated by RN_LAB_TECH<br>
+                        {{ datetime.now().strftime('%B %d, %Y at %I:%M %p') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

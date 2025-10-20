@@ -1,0 +1,279 @@
+<!-- Enhanced Student Details Modal -->
+<div class="modal fade" id="studentDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user me-2"></i>Student Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="studentDetailsContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading student details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="editStudentBtn" style="display: none;">
+                    <i class="fas fa-edit me-2"></i>Edit Student
+                </button>
+                <button type="button" class="btn btn-success" id="addPaymentBtn" style="display: none;">
+                    <i class="fas fa-plus me-2"></i>Add Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced student details functionality
+function viewStudent(studentId) {
+    const modal = new bootstrap.Modal(document.getElementById('studentDetailsModal'));
+    const content = document.getElementById('studentDetailsContent');
+    const editBtn = document.getElementById('editStudentBtn');
+    const paymentBtn = document.getElementById('addPaymentBtn');
+    
+    // Reset modal
+    content.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading student details...</p>
+        </div>
+    `;
+    editBtn.style.display = 'none';
+    paymentBtn.style.display = 'none';
+    
+    modal.show();
+    
+    // Fetch student details
+    fetch(`/api/student/${studentId}/details`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch student details');
+            }
+            return response.json();
+        })
+        .then(data => {
+            renderStudentDetails(data);
+            
+            // Show action buttons
+            editBtn.style.display = 'inline-block';
+            paymentBtn.style.display = 'inline-block';
+            
+            // Set up button actions
+            editBtn.onclick = () => {
+                window.location.href = `/edit_student/${data.student_id}`;
+            };
+            
+            paymentBtn.onclick = () => {
+                window.location.href = `/add_income?student_id=${data.student_id}`;
+            };
+        })
+        .catch(error => {
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        });
+}
+
+function renderStudentDetails(student) {
+    const content = document.getElementById('studentDetailsContent');
+    
+    const paymentStatusBadge = student.is_paid_in_full 
+        ? '<span class="badge bg-success fs-6"><i class="fas fa-check-circle me-1"></i>Paid in Full</span>'
+        : '<span class="badge bg-warning fs-6"><i class="fas fa-exclamation-triangle me-1"></i>Outstanding</span>';
+    
+    const completionPercentage = student.total_required > 0 
+        ? Math.round((student.total_paid / student.total_required) * 100)
+        : 0;
+    
+    content.innerHTML = `
+        <div class="row">
+            <!-- Student Information -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Student Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Student ID:</strong></td>
+                                <td>${student.student_id}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Full Name:</strong></td>
+                                <td>${student.name}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sex:</strong></td>
+                                <td>
+                                    <span class="badge bg-${student.sex === 'Female' ? 'danger' : 'primary'}">
+                                        <i class="fas fa-${student.sex === 'Female' ? 'female' : 'male'} me-1"></i>
+                                        ${student.sex}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Form/Class:</strong></td>
+                                <td><span class="badge bg-secondary">${student.form_class}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Parent Phone:</strong></td>
+                                <td>${student.parent_phone || '<em class="text-muted">Not provided</em>'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Payment Status:</strong></td>
+                                <td>${paymentStatusBadge}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Summary -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Payment Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Progress Bar -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small">Payment Completion</span>
+                                <span class="small">${completionPercentage}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar ${student.is_paid_in_full ? 'bg-success' : 'bg-warning'}" 
+                                     style="width: ${completionPercentage}%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fund Breakdown -->
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="border rounded p-2 mb-2">
+                                    <div class="text-primary"><strong>PTA Fund</strong></div>
+                                    <div class="small text-muted">Required: MK${student.pta_required.toLocaleString()}</div>
+                                    <div class="small">Paid: <strong class="text-success">MK${student.pta_paid.toLocaleString()}</strong></div>
+                                    <div class="small">Balance: <strong class="text-${student.pta_balance > 0 ? 'danger' : 'success'}">MK${student.pta_balance.toLocaleString()}</strong></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2 mb-2">
+                                    <div class="text-info"><strong>SDF Fund</strong></div>
+                                    <div class="small text-muted">Required: MK${student.sdf_required.toLocaleString()}</div>
+                                    <div class="small">Paid: <strong class="text-success">MK${student.sdf_paid.toLocaleString()}</strong></div>
+                                    <div class="small">Balance: <strong class="text-${student.sdf_balance > 0 ? 'danger' : 'success'}">MK${student.sdf_balance.toLocaleString()}</strong></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2 mb-2">
+                                    <div class="text-warning"><strong>Boarding</strong></div>
+                                    <div class="small text-muted">Required: MK${student.boarding_required.toLocaleString()}</div>
+                                    <div class="small">Paid: <strong class="text-success">MK${student.boarding_paid.toLocaleString()}</strong></div>
+                                    <div class="small">Balance: <strong class="text-${student.boarding_balance > 0 ? 'danger' : 'success'}">MK${student.boarding_balance.toLocaleString()}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Totals -->
+                        <div class="border-top pt-2 mt-2">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="text-muted small">Total Required</div>
+                                    <div class="h6">MK${student.total_required.toLocaleString()}</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-muted small">Total Paid</div>
+                                    <div class="h6 text-success">MK${student.total_paid.toLocaleString()}</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-muted small">Total Balance</div>
+                                    <div class="h6 text-${student.total_balance > 0 ? 'danger' : 'success'}">MK${student.total_balance.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment History -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-history me-2"></i>Payment History</h6>
+                    </div>
+                    <div class="card-body">
+                        ${renderPaymentHistory(student.payment_history)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderPaymentHistory(payments) {
+    if (!payments || payments.length === 0) {
+        return `
+            <div class="text-center py-3">
+                <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+                <p class="text-muted">No payment history available</p>
+            </div>
+        `;
+    }
+    
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Fund Type</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Receipt No.</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    payments.forEach(payment => {
+        const fundBadgeClass = {
+            'PTA': 'bg-primary',
+            'SDF': 'bg-info',
+            'Boarding': 'bg-warning'
+        }[payment.fund_type] || 'bg-secondary';
+        
+        html += `
+            <tr>
+                <td>${new Date(payment.date).toLocaleDateString()}</td>
+                <td><span class="badge ${fundBadgeClass}">${payment.fund_type}</span></td>
+                <td class="text-success"><strong>MK${payment.amount.toLocaleString()}</strong></td>
+                <td>${payment.payment_method}</td>
+                <td><code>${payment.receipt_number}</code></td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    return html;
+}
+</script>

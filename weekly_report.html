@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Report - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calendar-week me-2"></i>Weekly Financial Report</h2>
+    <div>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Back to Reports
+        </a>
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print me-2"></i>Print Report
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Report Period: {{ start_date.strftime('%B %d, %Y') }} - {{ end_date.strftime('%B %d, %Y') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- PTA Fund Summary -->
+            <div class="col-md-4">
+                <h6><i class="fas fa-users me-2"></i>PTA Fund Summary</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Total Collected:</td>
+                        <td class="text-success"><strong>MK{{ pta_collected|comma }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Total Expenditure:</td>
+                        <td class="text-danger"><strong>MK{{ total_pta_expenditure|comma }}</strong></td>
+                    </tr>
+                    <tr class="{% if pta_balance >= 0 %}table-success{% else %}table-danger{% endif %}">
+                        <td><strong>Remaining Balance:</strong></td>
+                        <td class="{% if pta_balance >= 0 %}text-success{% else %}text-danger{% endif %}"><strong>MK{{ pta_balance|comma }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- SDF Fund Summary -->
+            <div class="col-md-4">
+                <h6><i class="fas fa-graduation-cap me-2"></i>SDF Fund Summary</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Total Collected:</td>
+                        <td class="text-success"><strong>MK{{ sdf_collected|comma }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Total Expenditure:</td>
+                        <td class="text-danger"><strong>MK{{ total_sdf_expenditure|comma }}</strong></td>
+                    </tr>
+                    <tr class="{% if sdf_balance >= 0 %}table-success{% else %}table-danger{% endif %}">
+                        <td><strong>Remaining Balance:</strong></td>
+                        <td class="{% if sdf_balance >= 0 %}text-success{% else %}text-danger{% endif %}"><strong>MK{{ sdf_balance|comma }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- Boarding Fee Summary -->
+            <div class="col-md-4">
+                <h6><i class="fas fa-bed me-2"></i>Boarding Fee Summary</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Total Collected:</td>
+                        <td class="text-success"><strong>MK{{ boarding_collected|comma }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Total Expenditure:</td>
+                        <td class="text-danger"><strong>MK{{ total_boarding_expenditure|comma }}</strong></td>
+                    </tr>
+                    <tr class="{% if boarding_balance >= 0 %}table-success{% else %}table-danger{% endif %}">
+                        <td><strong>Remaining Balance:</strong></td>
+                        <td class="{% if boarding_balance >= 0 %}text-success{% else %}text-danger{% endif %}"><strong>MK{{ boarding_balance|comma }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <!-- Other Income Summary -->
+        <div class="row">
+            <div class="col-md-6">
+                <h6><i class="fas fa-coins me-2"></i>Other Income Summary</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Total Collected:</td>
+                        <td class="text-success"><strong>MK{{ total_other_income|comma }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Total Expenditure:</td>
+                        <td class="text-danger"><strong>MK{{ other_income_expenditure|default(0)|comma }}</strong></td>
+                    </tr>
+                    <tr class="{% if (total_other_income - other_income_expenditure|default(0)) >= 0 %}table-success{% else %}table-danger{% endif %}">
+                        <td><strong>Remaining Balance:</strong></td>
+                        <td class="{% if (total_other_income - other_income_expenditure|default(0)) >= 0 %}text-success{% else %}text-danger{% endif %}"><strong>MK{{ (total_other_income - other_income_expenditure|default(0))|comma }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <h6>Net Position</h6>
+                <div class="alert alert-{{ 'success' if (pta_balance + sdf_balance + boarding_balance + (total_other_income - other_income_expenditure|default(0))) >= 0 else 'warning' }}">
+                    <strong>Net Balance for the Week: 
+                    MK{{ (pta_balance + sdf_balance + boarding_balance + (total_other_income - other_income_expenditure|default(0)))|comma }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+@media print {
+    .btn, .navbar, .sidebar { display: none !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; }
+}
+</style>
+{% endblock %}

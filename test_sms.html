@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Test SMS - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-mobile-alt me-2"></i>Test SMS Functionality</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('test_sms_send') }}">
+                        <div class="mb-3">
+                            <label class="form-label">Test Phone Number</label>
+                            <input type="text" class="form-control" name="phone_number" value="+265991332952" required>
+                            <small class="form-text text-muted">Your configured test number</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Test Message</label>
+                            <textarea class="form-control" name="message" rows="4" required>Hello! This is a test message from SmartFee System. SMS integration is working correctly with your Africa's Talking account.</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <strong>Current SMS Configuration:</strong><br>
+                                Username: ROBERT NSAMBE<br>
+                                Sender ID: SmartFee<br>
+                                API Status: Ready
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Send Test SMS
+                        </button>
+                        <a href="{{ url_for('sms_notifications') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to SMS Notifications
+                        </a>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Test Results -->
+            {% if test_result %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-clipboard-check me-2"></i>Test Results</h5>
+                </div>
+                <div class="card-body">
+                    {% if test_result.success %}
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle me-2"></i>SMS Sent Successfully!</h6>
+                            <p><strong>Message ID:</strong> {{ test_result.message_id or 'N/A' }}</p>
+                            <p><strong>Status:</strong> {{ test_result.status or 'Sent' }}</p>
+                            <p><strong>Phone:</strong> {{ test_phone }}</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>SMS Failed to Send</h6>
+                            <p><strong>Error:</strong> {{ test_result.error }}</p>
+                            <p><strong>Phone:</strong> {{ test_phone }}</p>
+                            
+                            <hr>
+                            <h6>Troubleshooting Tips:</h6>
+                            <ul>
+                                <li>Check your Africa's Talking account balance</li>
+                                <li>Verify your API key is correct</li>
+                                <li>Ensure phone number format is correct (+265xxxxxxxxx)</li>
+                                <li>Check if your sender ID is approved</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

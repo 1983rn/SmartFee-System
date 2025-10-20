@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Add Student - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-plus me-2"></i>Add New Student</h2>
+    <a href="{{ url_for('students') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Students
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Student Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">Student ID *</label>
+                                <input type="text" class="form-control" id="student_id" name="student_id" 
+                                       value="{{ generated_id }}" readonly required>
+                                <div class="form-text">Student ID is automatically generated once the first student is added</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required 
+                                       placeholder="Enter student name to auto-generate ID">
+                                <div class="form-text">Enter the student name to automatically generate a student ID</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sex" class="form-label">Sex *</label>
+                                <select class="form-select" id="sex" name="sex" required>
+                                    <option value="">Select Sex</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="form_class" class="form-label">Form/Class *</label>
+                                <input type="text" class="form-control" id="form_class" name="form_class" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parent_phone" class="form-label">Parent Phone Number (Optional)</label>
+                                <input type="tel" class="form-control" id="parent_phone" name="parent_phone" 
+                                       placeholder="+1234567890">
+                                <div class="form-text">Optional - Contact number for parent/guardian</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                                        
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary me-md-2" onclick="history.back()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Add Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Information Panel -->
+        <div class="card mt-3">
+            <div class="card-body bg-light">
+                <div class="text-center">
+                    <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Next Steps</h6>
+                    <p class="mb-1">After adding the student, you can:</p>
+                    <small class="text-muted">
+                        • Set fee amounts in <strong>Fund Configuration</strong><br>
+                        • Record payments in <strong>Income Management</strong><br>
+                        • Generate receipts and track payment status
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Student ID is automatically generated and readonly - no JavaScript needed for generation
+
+// Add validation for student ID
+document.getElementById('student_id').addEventListener('blur', function() {
+    const studentId = this.value.trim();
+    if (studentId === '') {
+        this.setCustomValidity('Student ID is required');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const studentId = document.getElementById('student_id').value;
+    const name = document.getElementById('name').value;
+    const formClass = document.getElementById('form_class').value;
+    // Basic required field validation
+    if (!studentId || !name || !formClass) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+});
+
+</script>
+{% endblock %}

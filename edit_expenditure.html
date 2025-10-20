@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Expenditure - CWED RN-SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit me-2"></i>Edit Expenditure</h2>
+    <a href="{{ url_for('expenditure') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Expenditure
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Edit Expenditure Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="date" name="date" 
+                                       value="{{ expenditure.date.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fund_type" class="form-label">Fund Type *</label>
+                                <select class="form-select" id="fund_type" name="fund_type" required>
+                                    <option value="">Select Fund Type</option>
+                                    <option value="PTA" {{ 'selected' if expenditure.fund_type == 'PTA' else '' }}>PTA Fund</option>
+                                    <option value="SDF" {{ 'selected' if expenditure.fund_type == 'SDF' else '' }}>SDF</option>
+                                    <option value="Boarding" {{ 'selected' if expenditure.fund_type == 'Boarding' else '' }}>Boarding Fee</option>
+                                    <option value="Other Income" {{ 'selected' if expenditure.fund_type == 'Other Income' else '' }}>Other Income</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="activity_service" class="form-label">Activity/Service *</label>
+                        <select class="form-select" id="activity_service" name="activity_service" required>
+                            <option value="">Select Activity/Service</option>
+                            <optgroup label="Facilitating Office Operations">
+                                <option value="Facilitating office operations: 1401 heating and lighting" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1401 heating and lighting' else '' }}>1401 - Heating and Lighting</option>
+                                <option value="Facilitating office operations: 1402 Telephone charges" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1402 Telephone charges' else '' }}>1402 - Telephone Charges</option>
+                                <option value="Facilitating office operations: 1405 water and sanitation" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1405 water and sanitation' else '' }}>1405 - Water and Sanitation</option>
+                                <option value="Facilitating office operations: 1502 consumable stores" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1502 consumable stores' else '' }}>1502 - Consumable Stores</option>
+                                <option value="Facilitating office operations: 1504 postage" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1504 postage' else '' }}>1504 - Postage</option>
+                                <option value="Facilitating office operations: 1505 printing cost" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1505 printing cost' else '' }}>1505 - Printing Cost</option>
+                                <option value="Facilitating office operations: 1406 publication and advertisement" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1406 publication and advertisement' else '' }}>1406 - Publication and Advertisement</option>
+                                <option value="Facilitating office operations: 1506 stationery" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1506 stationery' else '' }}>1506 - Stationery</option>
+                                <option value="Facilitating office operations: 1507 uniform and protective wear" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1507 uniform and protective wear' else '' }}>1507 - Uniform and Protective Wear</option>
+                                <option value="Facilitating office operations: 2401 Fuel and Lubricants" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 2401 Fuel and Lubricants' else '' }}>2401 - Fuel and Lubricants</option>
+                                <option value="Facilitating office operations: 2321 Subscriptions" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 2321 Subscriptions' else '' }}>2321 - Subscriptions</option>
+                                <option value="Facilitating office operations: 0251 purchase of plant and office equipment" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 0251 purchase of plant and office equipment' else '' }}>0251 - Purchase of Plant and Office Equipment</option>
+                                <option value="Facilitating office operations: 1204 wages for support staff" {{ 'selected' if expenditure.activity_service == 'Facilitating office operations: 1204 wages for support staff' else '' }}>1204 - Wages for Support Staff</option>
+                            </optgroup>
+                            <optgroup label="Management of School Based and National Examinations">
+                                <option value="Management of school based and National examinations: 1803-examinations" {{ 'selected' if expenditure.activity_service == 'Management of school based and National examinations: 1803-examinations' else '' }}>1803 - Examinations</option>
+                            </optgroup>
+                            <optgroup label="Student Support Services">
+                                <option value="Provision of sanitary pads to girls in secondary schools: 1502- consumables" {{ 'selected' if expenditure.activity_service == 'Provision of sanitary pads to girls in secondary schools: 1502- consumables' else '' }}>Sanitary Pads: 1502 - Consumables</option>
+                                <option value="Provision of PPEs to schools : 1502- consumables" {{ 'selected' if expenditure.activity_service == 'Provision of PPEs to schools : 1502- consumables' else '' }}>PPEs: 1502 - Consumables</option>
+                                <option value="Provision of food and other boarding necessities to learners: 1801- boarding expenses" {{ 'selected' if expenditure.activity_service == 'Provision of food and other boarding necessities to learners: 1801- boarding expenses' else '' }}>Boarding: 1801 - Boarding Expenses</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="voucher_no" class="form-label">Voucher No.</label>
+                                <input type="text" class="form-control" id="voucher_no" name="voucher_no" 
+                                       value="{{ expenditure.voucher_no or '' }}" placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="cheque_no" class="form-label">Cheque No.</label>
+                                <input type="text" class="form-control" id="cheque_no" name="cheque_no" 
+                                       value="{{ expenditure.cheque_no or '' }}" placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="amount_paid" class="form-label">Amount Paid (MK) *</label>
+                                <input type="number" class="form-control" id="amount_paid" name="amount_paid" 
+                                       value="{{ expenditure.amount_paid }}" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('expenditure') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Expenditure
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

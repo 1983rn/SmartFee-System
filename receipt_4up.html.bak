@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipts - SmartFee System</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 5mm;
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+        .page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 5mm;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            padding: 5mm;
+            box-sizing: border-box;
+            page-break-after: always;
+        }
+        .receipt-container {
+            position: relative;
+            border: 1px solid #000;
+            padding: 5mm;
+            box-sizing: border-box;
+            overflow: hidden;
+            height: calc((297mm - 30mm) / 2);
+            display: flex;
+            flex-direction: column;
+        }
+        .receipt-stamp {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            border: 2px solid #c44569;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            transform: rotate(-15deg);
+            font-family: 'Arial Black', Arial, sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        .receipt-header h1 {
+            margin: 0;
+            font-size: 12px;
+            color: black;
+        }
+        .receipt-header p {
+            margin: 2px 0;
+            font-size: 10px;
+            color: black;
+        }
+        .receipt-section {
+            margin-bottom: 5px;
+        }
+        .receipt-section h3 {
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            font-size: 10px;
+            margin: 5px 0;
+            color: black;
+        }
+        .receipt-section p {
+            margin: 2px 0;
+            font-size: 9px;
+            color: black;
+        }
+        .payment-details {
+            border: 1px solid #000;
+            font-size: 8px;
+            margin: 5px 0;
+        }
+        .payment-header {
+            background: #f0f0f0;
+            padding: 2px;
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            display: flex;
+        }
+        .payment-header span {
+            flex: 1;
+            text-align: center;
+        }
+        .payment-row {
+            display: flex;
+            padding: 2px;
+            border-bottom: 1px solid #eee;
+        }
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+        .payment-row span {
+            flex: 1;
+            text-align: center;
+        }
+        .fee-pta {
+            background: #007bff;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 8px;
+        }
+        .fee-sdf {
+            background: #17a2b8;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 8px;
+        }
+        .fee-boarding {
+            background: #ffc107;
+            color: black;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 8px;
+        }
+        .receipt-footer {
+            margin-top: auto;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-size: 8px;
+            text-align: center;
+        }
+        .no-print {
+            display: none;
+        }
+        @media screen {
+            body {
+                background: #f5f5f5;
+                padding: 10mm;
+            }
+            .no-print {
+                display: block;
+                margin-bottom: 20px;
+                padding: 10px;
+            }
+            .page {
+                background: white;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .page {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen only buttons -->
+    <div class="no-print">
+        <a href="{{ url_for('payment_status') }}" style="background: #6c757d; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">← Back</a>
+        <button onclick="window.print()" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">🖨️ Print Receipts</button>
+    </div>
+
+    {% set batch_size = 4 %}
+    {% for i in range(0, receipts|length, batch_size) %}
+    <div class="page">
+        {% for receipt in receipts[i:i+batch_size] %}
+        <div class="receipt-container">
+            <!-- Receipt Stamp -->
+            <div class="receipt-stamp">{{ receipt.decrypted_receipt_no or receipt.receipt_no }}</div>
+            
+            <!-- Header -->
+            <div class="receipt-header">
+                <h1>{{ school_name }}</h1>
+                {% if school_address %}
+                <p>{{ school_address }}</p>
+                {% endif %}
+                <p>Official Payment Receipt</p>
+            </div>
+            
+            <!-- Student Information -->
+            <div class="receipt-section">
+                <h3>Student Information</h3>
+                <p><strong>ID:</strong> {{ receipt.decrypted_student_id or receipt.student_id }}</p>
+                <p><strong>Name:</strong> {{ receipt.decrypted_student_name or receipt.student_name }}</p>
+                <p><strong>Class:</strong> {{ receipt.decrypted_form_class or receipt.form_class }}</p>
+            </div>
+            
+            <!-- Receipt Details -->
+            <div class="receipt-section">
+                <h3>Receipt Details</h3>
+                <p><strong>Date:</strong> {{ receipt.payment_date.strftime('%d/%m/%Y') }}</p>
+                {% if receipt.decrypted_deposit_slip_ref or receipt.deposit_slip_ref %}
+                <p><strong>Ref:</strong> {{ receipt.decrypted_deposit_slip_ref or receipt.deposit_slip_ref }}</p>
+                {% endif %}
+                <p><strong>Installment:</strong> {{ receipt.installment_number }}/2</p>
+            </div>
+            
+            <!-- Payment Details -->
+            <div class="receipt-section">
+                <h3>Payment Details</h3>
+                
+                {% set pta_receipts = [] %}
+                {% set sdf_receipts = [] %}
+                {% set boarding_receipts = [] %}
+                {% for r in receipts %}
+                    {% if r.student_id == receipt.student_id %}
+                        {% set fee_type = r.decrypted_fee_type or r.fee_type %}
+                        {% if fee_type == 'PTA' %}
+                            {% set _ = pta_receipts.append(r) %}
+                        {% elif fee_type == 'SDF' %}
+                            {% set _ = sdf_receipts.append(r) %}
+                        {% elif fee_type == 'Boarding' %}
+                            {% set _ = boarding_receipts.append(r) %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="payment-details">
+                    <div class="payment-header">
+                        <span>Fee Type</span>
+                        <span>Amount Paid</span>
+                    </div>
+                    
+                    {% if pta_receipts %}
+                    <div class="payment-row">
+                        <span class="fee-pta">PTA</span>
+                        <span style="font-weight: bold; color: green;">MK{{ "%.2f"|format(pta_receipts | sum(attribute='amount_paid')) }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if sdf_receipts %}
+                    <div class="payment-row">
+                        <span class="fee-sdf">SDF</span>
+                        <span style="font-weight: bold; color: green;">MK{{ "%.2f"|format(sdf_receipts | sum(attribute='amount_paid')) }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if boarding_receipts %}
+                    <div class="payment-row">
+                        <span class="fee-boarding">Boarding</span>
+                        <span style="font-weight: bold; color: green;">MK{{ "%.2f"|format(boarding_receipts | sum(attribute='amount_paid')) }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Summary -->
+            <div class="receipt-section">
+                <h3>Payment Summary</h3>
+                {% set total_paid = (pta_receipts | sum(attribute='amount_paid')) + (sdf_receipts | sum(attribute='amount_paid')) + (boarding_receipts | sum(attribute='amount_paid')) %}
+                {% set total_balance = (pta_receipts[-1].balance if pta_receipts else 0) + (sdf_receipts[-1].balance if sdf_receipts else 0) + (boarding_receipts[-1].balance if boarding_receipts else 0) %}
+                
+                <p><strong>Total Paid:</strong> <span style="color: green; font-weight: bold;">MK{{ "%.2f"|format(total_paid) }}</span></p>
+                <p><strong>Balance:</strong> MK{{ "%.2f"|format(total_balance) }}</p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="receipt-footer">
+                <p style="margin: 0 0 3px 0;"><strong>Note:</strong> This is an official receipt from {{ school_name }}.</p>
+                <p style="margin: 0; font-style: italic;">Generated by RN_LAB_TECH</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</body>
+</html>

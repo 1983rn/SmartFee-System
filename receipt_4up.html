@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipts - SmartFee System</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+        .page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10mm 5mm;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            padding: 10mm;
+            box-sizing: border-box;
+            page-break-after: always;
+        }
+        .receipt-container {
+            position: relative;
+            border: 1px solid #000;
+            padding: 5mm;
+            box-sizing: border-box;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            break-inside: avoid;
+        }
+        .receipt-stamp {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 50%;
+            border: 1px solid #c44569;
+            font-weight: bold;
+            font-size: 8px;
+            text-align: center;
+            transform: rotate(-15deg);
+            font-family: 'Arial Black', Arial, sans-serif;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 3px;
+        }
+        .receipt-header h1 {
+            margin: 0;
+            font-size: 12px;
+            color: black;
+            line-height: 1.2;
+        }
+        .receipt-header p {
+            margin: 1px 0;
+            font-size: 9px;
+            color: black;
+            line-height: 1.2;
+        }
+        .receipt-section {
+            margin-bottom: 3px;
+        }
+        .receipt-section h3 {
+            border-bottom: 1px solid #000;
+            padding-bottom: 1px;
+            font-size: 9px;
+            margin: 3px 0;
+            color: black;
+        }
+        .receipt-section p {
+            margin: 1px 0;
+            font-size: 8px;
+            color: black;
+            line-height: 1.2;
+        }
+        .payment-details {
+            border: 1px solid #000;
+            font-size: 7px;
+            margin: 3px 0;
+        }
+        .payment-header {
+            background: #f0f0f0;
+            padding: 1px 2px;
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            display: flex;
+        }
+        .payment-header span {
+            flex: 1;
+            text-align: center;
+            font-size: 8px;
+        }
+        .payment-row {
+            display: flex;
+            padding: 1px 2px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+        .payment-row span {
+            flex: 1;
+            text-align: center;
+            font-size: 8px;
+        }
+        .fee-pta {
+            background: #007bff;
+            color: white;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 7px;
+            display: inline-block;
+            min-width: 30px;
+            text-align: center;
+        }
+        .fee-sdf {
+            background: #17a2b8;
+            color: white;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 7px;
+            display: inline-block;
+            min-width: 30px;
+            text-align: center;
+        }
+        .fee-boarding {
+            background: #ffc107;
+            color: black;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 7px;
+            display: inline-block;
+            min-width: 30px;
+            text-align: center;
+        }
+        .receipt-footer {
+            margin-top: auto;
+            border-top: 1px solid #000;
+            padding-top: 3px;
+            font-size: 7px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .no-print {
+            display: none;
+        }
+        @media screen {
+            body {
+                background: #f5f5f5;
+                padding: 10mm;
+            }
+            .no-print {
+                display: block;
+                margin-bottom: 20px;
+                padding: 10px;
+                text-align: center;
+            }
+            .page {
+                background: white;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+        }
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .page {
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+                page-break-after: always;
+            }
+            .page:last-child {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen only buttons -->
+    <div class="no-print">
+        <a href="{{ url_for('payment_status') }}" style="background: #6c757d; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">← Back to Payment Status</a>
+        <button onclick="window.print()" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">🖨️ Print Receipts</button>
+        <button onclick="window.close()" style="background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">✕ Close</button>
+    </div>
+
+    {% set batch_size = 4 %}
+    {% for i in range(0, receipts|length, batch_size) %}
+    <div class="page">
+        {% for receipt in receipts[i:i+batch_size] %}
+        <div class="receipt-container">
+            <!-- Receipt Stamp -->
+            <div class="receipt-stamp">{{ receipt.decrypted_receipt_no or receipt.receipt_no }}</div>
+            
+            <!-- Header -->
+            <div class="receipt-header">
+                <h1>{{ school_name }}</h1>
+                {% if school_address %}
+                <p>{{ school_address }}</p>
+                {% endif %}
+                <p>Official Payment Receipt</p>
+            </div>
+            
+            <!-- Student Information -->
+            <div class="receipt-section">
+                <h3>Student Information</h3>
+                <p><strong>ID:</strong> {{ receipt.decrypted_student_id or receipt.student_id }}</p>
+                <p><strong>Name:</strong> {{ receipt.decrypted_student_name or receipt.student_name }}</p>
+                <p><strong>Class:</strong> {{ receipt.decrypted_form_class or receipt.form_class }}</p>
+            </div>
+            
+            <!-- Receipt Details -->
+            <div class="receipt-section">
+                <h3>Receipt Details</h3>
+                <p><strong>Date:</strong> {{ receipt.payment_date.strftime('%d/%m/%Y') if receipt.payment_date else 'N/A' }}</p>
+                {% if receipt.decrypted_deposit_slip_ref and receipt.decrypted_deposit_slip_ref != 'N/A' %}
+                <p><strong>Ref:</strong> {{ receipt.decrypted_deposit_slip_ref }}</p>
+                {% endif %}
+                <p><strong>Receipt No:</strong> {{ receipt.decrypted_receipt_no or receipt.receipt_no }}</p>
+            </div>
+            
+            <!-- Payment Details -->
+            <div class="receipt-section">
+                <h3>Payment Details</h3>
+                
+                <div class="payment-details">
+                    <div class="payment-header">
+                        <span>Fee Type</span>
+                        <span>Amount Paid</span>
+                    </div>
+                    
+                    {% if receipt.pta_amount and receipt.pta_amount > 0 %}
+                    <div class="payment-row">
+                        <span class="fee-pta">PTA</span>
+                        <span style="font-weight: bold; color: green;">MK{{ "%.2f"|format(receipt.pta_amount) }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if receipt.sdf_amount and receipt.sdf_amount > 0 %}
+                    <div class="payment-row">
+                        <span class="fee-sdf">SDF</span>
+                        <span style="font-weight: bold; color: green;">MK{{ "%.2f"|format(receipt.sdf_amount) }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if receipt.boarding_amount and receipt.boarding_amount > 0 %}
+                    <div class="payment-row">
+                        <span class="fee-boarding">Boarding</span>
+                        <span style="font-weight: bold; color: green;">MK{{ "%.2f"|format(receipt.boarding_amount) }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Summary -->
+            <div class="receipt-section">
+                <h3>Payment Summary</h3>
+                <p><strong>Total Paid:</strong> <span style="color: green; font-weight: bold;">MK{{ "%.2f"|format(receipt.total_amount) }}</span></p>
+                <p><strong>Term:</strong> {{ term_name or 'Current Term' }}</p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="receipt-footer">
+                <p style="margin: 0 0 2px 0;"><strong>Note:</strong> This is an official receipt from {{ school_name }}.</p>
+                <p style="margin: 0; font-style: italic;">Generated by RN_LAB_TECH</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <script>
+        // Auto-print when page loads (only in print view)
+        if (window.location.search.includes('print=1')) {
+            window.onload = function() {
+                setTimeout(function() {
+                    window.print();
+                    // Close the window after printing (only if it was opened by our script)
+                    if (window.opener) {
+                        setTimeout(window.close, 100);
+                    }
+                }, 500);
+            };
+        }
+    </script>
+</body>
+</html>

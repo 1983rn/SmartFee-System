@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipts - {{ school_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #f5f5f5;
+            color: black;
+        }
+        
+        .receipts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .receipt-container {
+            background: white;
+            border: 2px solid black;
+            padding: 10px;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .receipt-stamp {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            border: 3px solid #c44569;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transform: rotate(-15deg);
+            font-family: 'Arial Black', Arial, sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .receipt-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            text-decoration: underline;
+        }
+        
+        .school-info {
+            margin: 8px 0;
+        }
+        
+        .school-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 3px 0;
+        }
+        
+        .school-address {
+            font-size: 10px;
+            margin: 3px 0;
+        }
+        
+        .receipt-details {
+            margin: 12px 0;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            padding: 2px 0;
+            font-size: 10px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            width: 40%;
+        }
+        
+        .detail-value {
+            width: 60%;
+            text-align: left;
+        }
+        
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            border: 2px solid black;
+            font-size: 10px;
+        }
+        
+        .payment-table th,
+        .payment-table td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: left;
+        }
+        
+        .payment-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .payment-table .amount {
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .total-row {
+            background-color: #e8f4f8;
+            font-weight: bold;
+        }
+        
+        .total-row .amount {
+            font-size: 11px;
+            color: #2c5aa0;
+        }
+        
+        .receipt-footer {
+            text-align: center;
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            padding-top: 10px;
+            border-top: 1px solid black;
+            font-size: 8px;
+        }
+        
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .no-print button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        
+        .no-print button:hover {
+            background: #0056b3;
+        }
+        
+        .back-btn {
+            background: #6c757d !important;
+        }
+        
+        .back-btn:hover {
+            background: #545b62 !important;
+        }
+        
+        @media print {
+            @page {
+                size: A4;
+                margin: 5mm;
+            }
+            
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+                font-size: 8pt;
+            }
+            
+            .receipts-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 5mm;
+                width: 100%;
+                height: 100vh;
+                padding: 0;
+            }
+            
+            .receipt-container {
+                border: 1px solid black;
+                padding: 5mm;
+                background: white;
+                page-break-inside: avoid;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .receipt-stamp {
+                font-size: 10px !important;
+                padding: 6px 8px !important;
+            }
+            
+            .receipt-title {
+                font-size: 12pt;
+            }
+            
+            .school-name {
+                font-size: 11pt;
+            }
+            
+            .school-address {
+                font-size: 8pt;
+            }
+            
+            .payment-table th,
+            .payment-table td {
+                padding: 3px;
+                font-size: 8pt;
+            }
+            
+            .total-row .amount {
+                font-size: 9pt;
+            }
+            
+            .detail-row {
+                font-size: 8pt;
+            }
+            
+            .receipt-footer {
+                font-size: 6pt;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen only buttons -->
+    <div class="no-print">
+        <button onclick="history.back()" class="back-btn">← Back</button>
+        <button onclick="window.print()">🖨️ Print Receipts</button>
+    </div>
+
+    <div class="receipts-grid">
+    {% for receipt in receipts %}
+        <div class="receipt-container">
+        <!-- Stamp-style Receipt Number -->
+        <div class="receipt-stamp">
+            {{ receipt.receipt_no }}
+        </div>
+        
+        <!-- Header -->
+        <div class="receipt-header">
+            <div class="receipt-title">General Receipt</div>
+            
+            <div class="school-info">
+                <div class="school-name">{{ school_name }}</div>
+                {% if school_address %}
+                <div class="school-address">{{ school_address }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Receipt Details -->
+        <div class="receipt-details">
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">{{ receipt.date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Form/Class:</span>
+                <span class="detail-value">{{ receipt.form_class }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Term:</span>
+                <span class="detail-value">{{ term }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Name of Student:</span>
+                <span class="detail-value">{{ receipt.student_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Deposit Ref No:</span>
+                <span class="detail-value">{{ receipt.deposit_ref }}</span>
+            </div>
+        </div>
+        
+        <!-- Payment Table -->
+        <table class="payment-table">
+            <thead>
+                <tr>
+                    <th>Fee Type</th>
+                    <th>Amount Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if receipt.pta_amount > 0 %}
+                <tr>
+                    <td>PTA</td>
+                    <td class="amount">MK {{ "%.2f"|format(receipt.pta_amount) }}</td>
+                </tr>
+                {% endif %}
+                {% if receipt.sdf_amount > 0 %}
+                <tr>
+                    <td>SDF</td>
+                    <td class="amount">MK {{ "%.2f"|format(receipt.sdf_amount) }}</td>
+                </tr>
+                {% endif %}
+                {% if receipt.boarding_amount > 0 %}
+                <tr>
+                    <td>Boarding Fee</td>
+                    <td class="amount">MK {{ "%.2f"|format(receipt.boarding_amount) }}</td>
+                </tr>
+                {% endif %}
+                <tr class="total-row">
+                    <td><strong>Total</strong></td>
+                    <td class="amount"><strong>MK {{ "%.2f"|format(receipt.total_amount) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Footer -->
+        <div class="receipt-footer">
+            <p><strong>Thank you for your payment!</strong></p>
+            <p>This is an official receipt from {{ school_name }}. Please keep this receipt for your records.</p>
+            <p><small>Generated by RN_LAB_TECH</small></p>
+        </div>
+        </div>
+    {% endfor %}
+    </div>
+</body>
+</html>

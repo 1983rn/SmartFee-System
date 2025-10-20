@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="fas fa-chart-bar me-2"></i>Financial Reports</h2>
+    <p class="text-muted">Generate comprehensive financial reports for PTA and SDF funds</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-calendar-day me-2"></i>Daily Reports</h5>
+            </div>
+            <div class="card-body">
+                <p>Generate detailed daily financial reports showing income and expenditure for both PTA and SDF funds.</p>
+                <form action="{{ url_for('daily_report') }}" method="GET" class="mb-3">
+                    <div class="input-group">
+                        <input type="date" class="form-control" name="date" value="{{ datetime.now().strftime('%Y-%m-%d') }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </form>
+                <a href="{{ url_for('daily_report') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-eye me-2"></i>View Today's Report
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-calendar-week me-2"></i>Weekly Reports</h5>
+            </div>
+            <div class="card-body">
+                <p>Generate comprehensive weekly financial reports for the last 7 days including trends and summaries.</p>
+                <a href="{{ url_for('weekly_report') }}" class="btn btn-success">
+                    <i class="fas fa-chart-line me-2"></i>Generate Weekly Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Report Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Daily Reports Include:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>All payments received</li>
+                            <li><i class="fas fa-check text-success me-2"></i>All expenditures made</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Separate PTA and SDF totals</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Net balance for the day</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Weekly Reports Include:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>7-day financial summary</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Daily breakdown</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Fund-wise analysis</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Trends and insights</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Income Report - {{ school_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .summary { margin-bottom: 30px; }
+        .summary-card { display: inline-block; margin: 10px; padding: 15px; border: 1px solid #ddd; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .total-row { font-weight: bold; background-color: #f9f9f9; }
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" class="btn btn-primary">Print</button>
+        <button onclick="window.close()" class="btn btn-secondary">Close</button>
+    </div>
+
+    <div class="header">
+        <h1>{{ school_name }}</h1>
+        <h2>Income Report</h2>
+        <p>Generated on: {{ datetime.now().strftime('%B %d, %Y at %I:%M %p') }}</p>
+    </div>
+
+    <div class="summary">
+        <h3>Income Summary</h3>
+        <div class="summary-card">
+            <h4>MK {{ pta_total|comma }}</h4>
+            <p>PTA Fund</p>
+        </div>
+        <div class="summary-card">
+            <h4>MK {{ sdf_total|comma }}</h4>
+            <p>SDF</p>
+        </div>
+        <div class="summary-card">
+            <h4>MK {{ boarding_total|comma }}</h4>
+            <p>Boarding Fee</p>
+        </div>
+        <div class="summary-card">
+            <h4>MK {{ other_income_total|comma }}</h4>
+            <p>Other Income</p>
+        </div>
+        <div class="summary-card" style="background-color: #e3f2fd;">
+            <h4>MK {{ grand_total|comma }}</h4>
+            <p>Grand Total</p>
+        </div>
+    </div>
+
+    <h3>Student Payment Records</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Form/Class</th>
+                <th>PTA Paid</th>
+                <th>SDF Paid</th>
+                <th>Boarding Paid</th>
+                <th>Total Paid</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in student_records %}
+            <tr>
+                <td>{{ record.student_id }}</td>
+                <td>{{ record.student_name }}</td>
+                <td>{{ record.form_class }}</td>
+                <td>MK {{ record.pta_paid|comma }}</td>
+                <td>MK {{ record.sdf_paid|comma }}</td>
+                <td>MK {{ record.boarding_paid|comma }}</td>
+                <td>MK {{ (record.pta_paid + record.sdf_paid + record.boarding_paid)|comma }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="3">TOTALS</td>
+                <td>MK {{ pta_total|comma }}</td>
+                <td>MK {{ sdf_total|comma }}</td>
+                <td>MK {{ boarding_total|comma }}</td>
+                <td>MK {{ (pta_total + sdf_total + boarding_total)|comma }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="margin-top: 50px; text-align: center; color: #666;">
+        <p>{{ software_name }} - Income Report</p>
+    </div>
+</body>
+</html>

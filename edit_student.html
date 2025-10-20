@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Student - CWED RN-SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-edit me-2"></i>Edit Student Details</h2>
+    <a href="{{ url_for('students') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Students
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Student Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">Student ID</label>
+                                <input type="text" class="form-control" id="student_id" value="{{ student.decrypted_data.student_id }}" readonly>
+                                <div class="form-text">Student ID cannot be changed</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ student.decrypted_data.name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sex" class="form-label">Sex</label>
+                                <select class="form-select" id="sex" name="sex" required>
+                                    <option value="">Select Sex</option>
+                                    <option value="Female" {{ 'selected' if student.decrypted_data.sex == 'Female' else '' }}>Female</option>
+                                    <option value="Male" {{ 'selected' if student.decrypted_data.sex == 'Male' else '' }}>Male</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="form_class" class="form-label">Form/Class</label>
+                                <input type="text" class="form-control" id="form_class" name="form_class" value="{{ student.decrypted_data.form_class }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parent_phone" class="form-label">Parent Phone Number</label>
+                                <input type="tel" class="form-control" id="parent_phone" name="parent_phone" value="{{ student.decrypted_data.parent_phone or '' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('students') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Payment Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">PTA Amount Paid</label>
+                    <div class="h5 text-success">MK{{ "%.2f"|format(student.pta_amount_paid) }}</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">SDF Amount Paid</label>
+                    <div class="h5 text-success">MK{{ "%.2f"|format(student.sdf_amount_paid) }}</div>
+                </div>
+                
+                {% if active_config %}
+                <hr>
+                <div class="mb-3">
+                    <label class="form-label">PTA Balance</label>
+                    <div class="h6 text-{{ 'success' if student.get_pta_balance() == 0 else 'warning' }}">
+                        MK{{ "%.2f"|format(student.get_pta_balance()) }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">SDF Balance</label>
+                    <div class="h6 text-{{ 'success' if student.get_sdf_balance() == 0 else 'warning' }}">
+                        MK{{ "%.2f"|format(student.get_sdf_balance()) }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Payment Status</label>
+                    <div>
+                        {% if student.is_paid_in_full() %}
+                            <span class="badge bg-success">Paid in Full</span>
+                        {% else %}
+                            <span class="badge bg-warning">Outstanding</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

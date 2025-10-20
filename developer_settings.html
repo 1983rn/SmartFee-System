@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Developer Settings - CWED RN-SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>Developer Settings</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Developer Access Required
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <strong>Warning:</strong> This section is restricted to system developers only. 
+                    Unauthorized access is prohibited. Changes made here will affect system security.
+                </div>
+                
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label for="dev_key" class="form-label">
+                            <i class="fas fa-key me-2"></i>Developer Access Key *
+                        </label>
+                        <input type="password" class="form-control" id="dev_key" name="dev_key" 
+                               required placeholder="Enter developer access key">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Contact system developer for access key
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">
+                        <i class="fas fa-user-cog me-2"></i>Update Login Credentials
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="new_username" class="form-label">New Username *</label>
+                                <input type="text" class="form-control" id="new_username" name="new_username" 
+                                       required placeholder="Enter new username">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="current_username" class="form-label">Current Username</label>
+                                <input type="text" class="form-control" id="current_username" value="{{ session.username }}" readonly title="Current username (read-only)">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password *</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password" 
+                                       required placeholder="Enter new password" minlength="6">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                       required placeholder="Confirm new password" minlength="6">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Note:</strong> After updating credentials, you will need to log in again with the new username and password.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-2"></i>Update Credentials
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Access Instructions
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if session.get('user_role') == 'developer' %}
+                <p class="mb-2">
+                    <strong>To access this page:</strong>
+                </p>
+                <ol>
+                    <li>Navigate to: <code>/developer_settings?dev_access=true</code></li>
+                    <li>Enter the developer access key: <code>NSAMBE_TECHNO_DEV_2025</code></li>
+                    <li>Update the username and password as needed</li>
+                </ol>
+                {% else %}
+                <p class="mb-2">
+                    <strong>To access this page and update User name and Password as needed contact the Developer on:</strong>
+                </p>
+                <div class="contact-info">
+                    <p class="mb-2">
+                        <i class="fas fa-phone me-2"></i>
+                        <strong>Cell:</strong> +265991332952
+                    </p>
+                    <p class="mb-2">
+                        <i class="fab fa-whatsapp me-2"></i>
+                        <strong>WhatsApp:</strong> +265999630132
+                    </p>
+                    <p class="mb-2">
+                        <i class="fas fa-envelope me-2"></i>
+                        <strong>Email:</strong> robertnsambe@gmail.com
+                    </p>
+                </div>
+                {% endif %}
+                <div class="alert alert-light mt-3" role="alert">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        This page is only accessible to authorized system developers.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('new_password').value;
+    const confirmPassword = this.value;
+    
+    if (password !== confirmPassword) {
+        this.setCustomValidity('Passwords do not match');
+        this.classList.add('is-invalid');
+    } else {
+        this.setCustomValidity('');
+        this.classList.remove('is-invalid');
+        this.classList.add('is-valid');
+    }
+});
+
+document.getElementById('new_password').addEventListener('input', function() {
+    const confirmPassword = document.getElementById('confirm_password');
+    if (confirmPassword.value) {
+        confirmPassword.dispatchEvent(new Event('input'));
+    }
+});
+</script>
+{% endblock %}

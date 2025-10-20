@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt - {{ student.name }}{% endblock %}
+
+{% block content %}
+<style>
+.print-area-center {
+    max-width: 210mm; /* A4 width */
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Print area demarcation for preview */
+.print-boundary {
+    border: 2px dashed #007bff;
+    padding: 15mm;
+    margin: 10px;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 123, 255, 0.05) 10px,
+        rgba(0, 123, 255, 0.05) 20px
+    );
+    position: relative;
+}
+
+.print-boundary::before {
+    content: "A4 Print Area - 210mm x 297mm";
+    position: absolute;
+    top: -25px;
+    left: 0;
+    background: #007bff;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Hide everything except the receipt */
+    body > *:not(.print-area-center) {
+        display: none !important;
+    }
+    
+    .navbar, .sidebar, .nav, .menu, .header, .footer, .breadcrumb, 
+    .navbar-brand, .navbar-nav, .navbar-toggler, .btn, .alert, 
+    .card-header .btn, .d-flex, .justify-content-between, .align-items-center {
+        display: none !important;
+    }
+    
+    /* Hide all buttons and interactive elements */
+    button, .btn, input[type="button"], input[type="submit"] {
+        display: none !important;
+    }
+    
+    .container, .print-area-center {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    #printable-receipt { 
+        position: relative !important;
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        margin: 0; 
+        box-shadow: none;
+        border: 2px solid #000;
+        padding: 10mm;
+        page-break-inside: avoid;
+    }
+    
+    .no-print { 
+        display: none !important; 
+    }
+    
+    .print-boundary {
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .print-boundary::before {
+        display: none !important;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .card-header {
+        background: #000 !important;
+        color: #fff !important;
+        border: none;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .card-body {
+        padding: 15px;
+        border: none;
+    }
+    
+    .table {
+        font-size: 11pt;
+        margin-bottom: 15px;
+    }
+    
+    .table th, .table td {
+        padding: 6px 8px;
+        border: 1px solid #000;
+    }
+    
+    h3 {
+        font-size: 16pt;
+        margin-bottom: 8px;
+    }
+    
+    h5 {
+        font-size: 12pt;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    
+    hr {
+        border-top: 1px solid #000;
+        margin: 15px 0;
+    }
+}
+
+@media screen {
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Receipt header styling */
+.receipt-header {
+    background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%) !important;
+    color: #fff !important;
+    border-radius: .5rem .5rem 0 0 !important;
+}
+
+.receipt-title {
+    font-weight: bold !important;
+    letter-spacing: 1px !important;
+}
+
+.school-name {
+    margin-bottom: 0.5em !important;
+}
+
+.receipt-number-display {
+    font-size: 1.2em !important;
+    margin-top: 10px !important;
+}
+
+/* Section headers */
+.section-header {
+    color: #4e54c8 !important;
+    font-weight: bold !important;
+}
+
+/* Summary section */
+.summary-section {
+    background: linear-gradient(90deg, #8f94fb 0%, #4e54c8 100%) !important;
+    color: #fff !important;
+    border-radius: 0 0 .5rem .5rem !important;
+    font-size: 1.1em !important;
+    padding: 15px !important;
+}
+
+.total-amount {
+    font-size: 1.3em !important;
+    font-weight: bold !important;
+    color: #28a745 !important;
+}
+</style>
+<div class="container my-4 print-area-center">
+    <div class="no-print mb-3 text-end">
+        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+    </div>
+    <div class="print-boundary">
+        <div class="card" id="printable-receipt">
+        <div class="card-header text-center receipt-header">
+            <h3 class="receipt-title">General Receipt</h3>
+            <h5 class="school-name">{{ school_name }}</h5>
+            {% set first_receipt = (pta_receipts|first) or (sdf_receipts|first) %}
+            {% if first_receipt %}
+                <div class="receipt-number-display"><strong>Receipt No:</strong> {{ first_receipt.receipt_no }}</div>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Student Name:</strong> {{ student.name }}<br>
+                    <strong>Student ID:</strong> {{ student.student_id }}<br>
+                    <strong>Form/Class:</strong> {{ student.form_class }}<br>
+                </div>
+                <div class="col-md-6 text-end">
+                    <strong>Date:</strong> {{ datetime.now().strftime('%Y-%m-%d') }}<br>
+                </div>
+            </div>
+            <hr>
+            <div>
+                <h5 class="section-header">PTA Payment</h5>
+                {% if pta_receipts %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount Paid</th>
+                            <th>Balance</th>
+                            <th>Installment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in pta_receipts %}
+                        <tr>
+                            <td>{{ r.payment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>MK{{ '{:,.2f}'.format(r.amount_paid) }}</td>
+                            <td>MK{{ '{:,.2f}'.format(r.balance) }}</td>
+                            <td>{{ r.installment_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <div class="text-muted">No PTA payments found.</div>
+                {% endif %}
+            </div>
+            <div class="mt-4">
+                <h5 class="section-header">SDF Payment</h5>
+                {% if sdf_receipts %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount Paid</th>
+                            <th>Balance</th>
+                            <th>Installment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in sdf_receipts %}
+                        <tr>
+                            <td>{{ r.payment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>MK{{ '{:,.2f}'.format(r.amount_paid) }}</td>
+                            <td>MK{{ '{:,.2f}'.format(r.balance) }}</td>
+                            <td>{{ r.installment_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <div class="text-muted">No SDF payments found.</div>
+                {% endif %}
+            </div>
+            <!-- Print button moved above, hidden in print -->
+            <div class="mt-5 p-3 text-center summary-section">
+                <strong>Note:</strong> This is an official receipt from RN_LAB_TECH. Please keep this receipt for your records. For any queries, please contact the school administration.<br>
+                <span class="small">Generated on: {{ datetime.now().strftime('%Y-%m-%d %H:%M:%S') }}</span>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}

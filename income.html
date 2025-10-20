@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Income - {{ school_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-arrow-up me-2"></i>Income</h2>
+    <div>
+        <button id="print4UpBtn" class="btn btn-primary me-2" disabled>
+            <i class="fas fa-print me-1"></i>Print 4-Up Receipts
+        </button>
+        <a href="{{ url_for('print_income') }}" class="btn btn-outline-dark me-2" target="_blank">
+            <i class="fas fa-print me-1"></i>Print Income
+        </a>
+        <a href="{{ url_for('professional_receipts') }}" class="btn btn-secondary me-2">
+            <i class="fas fa-receipt me-1"></i>Professional Receipts
+        </a>
+        <a href="{{ url_for('add_other_income') }}" class="btn btn-info me-2">
+            <i class="fas fa-plus me-1"></i>Record Other Income
+        </a>
+        <a href="{{ url_for('add_income') }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Record Payment
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h4>MK {{ pta_total|comma }}</h4>
+                <p class="mb-0">PTA Fund</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h4>MK {{ sdf_total|comma }}</h4>
+                <p class="mb-0">SDF</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h4>MK {{ boarding_total|comma }}</h4>
+                <p class="mb-0">Boarding Fee</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <h4>MK {{ other_income_total|comma }}</h4>
+                <p class="mb-0">Other Income</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h4>MK {{ grand_total|comma }}</h4>
+                <p class="mb-0">Grand Total</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Search Payments</h5>
+    </div>
+    <div class="card-body">
+        <form id="searchForm" class="row g-3" method="GET">
+            <div class="col-md-4">
+                <label class="form-label">Learner Name</label>
+                <input type="text" class="form-control" name="student_name" value="{{ request.args.get('student_name', '') }}" placeholder="Search by name...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Class/Form</label>
+                <input type="text" class="form-control" name="form_class" value="{{ request.args.get('form_class', '') }}" placeholder="Search by class...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Deposit Ref No.</label>
+                <input type="text" class="form-control" name="deposit_ref" value="{{ request.args.get('deposit_ref', '') }}" placeholder="Search by reference...">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Recorded Payments</h5>
+        <div class="btn-group">
+            <button onclick="printSearchResults()" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-print me-1"></i>Print Results
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" class="form-check-input select-all" id="income_select_all"></th>
+                        <th>Date</th>
+                        <th>Student ID</th>
+                        <th>Name of Student</th>
+                        <th>Sex</th>
+                        <th>Class/Form</th>
+                        <th>Deposit Ref No.</th>
+                        <th>PTA Fund Paid</th>
+                        <th>SDF Paid</th>
+                        <th>Boarding Fee Paid</th>
+                        <th>Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recorded_payments %}
+                            {% for payment in recorded_payments %}
+                        <tr>
+                            <td><input type="checkbox" class="form-check-input student-checkbox select-income-receipt" data-student-id="{{ payment.student_id }}"></td>
+                            <td>{{ payment.date.strftime('%Y-%m-%d') if payment.date else 'N/A' }}</td>
+                            <td>{{ payment.student_id }}</td>
+                            <td>{{ payment.student_name }}</td>
+                            <td>{{ payment.sex }}</td>
+                            <td>{{ payment.form_class }}</td>
+                            <td>{{ payment.deposit_ref_no }}</td>
+                            <td>MK {{ payment.pta_paid|comma }}</td>
+                            <td>MK {{ payment.sdf_paid|comma }}</td>
+                            <td>MK {{ payment.boarding_paid|comma }}</td>
+                            <td>MK {{ payment.balance|comma }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('edit_student', student_id=payment.student_db_id) }}" class="btn btn-sm btn-outline-primary" title="Edit Student">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('delete_student', student_id=payment.student_db_id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this student and all related payment records?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Student">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% if payment.can_download_receipt %}
+                                    <a href="{{ url_for('print_professional_receipt', student_id=payment.student_id) }}" class="btn btn-sm btn-outline-success" title="Professional Receipt" target="_blank">
+                                        <i class="fas fa-receipt"></i> Receipt
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" title="Professional receipt available only for students who have paid in full" disabled>
+                                        <i class="fas fa-receipt"></i> Receipt
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">No students found. <a href="{{ url_for('add_student') }}">Add your first student</a></td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Hidden form for multi-print (submits multiple student_id inputs) -->
+        <form id="incomeMultiPrintForm" action="{{ url_for('print_multiple_receipts') }}" method="GET" target="_blank" style="display:none;">
+            <!-- JS will create one or more inputs named student_id -->
+            <div id="incomeMultiPrintInputs"></div>
+        </form>
+    </div>
+</div>
+
+<!-- Other Income Records -->
+{% if other_incomes %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Other Income Records</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer Name</th>
+                        <th>Activity/Service</th>
+                        <th>Total Charge</th>
+                        <th>Amount Paid</th>
+                        <th>Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for other_income in other_incomes %}
+                    <tr>
+                        <td>{{ other_income.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ other_income.decrypted_customer_name or other_income.customer_name }}</td>
+                        <td>{{ other_income.decrypted_income_type or other_income.income_type }}</td>
+                        <td>MK {{ other_income.total_charge|comma }}</td>
+                        <td>MK {{ other_income.amount_paid|comma }}</td>
+                        <td>MK {{ other_income.balance|comma }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('edit_other_income', income_id=other_income.id) }}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('delete_other_income', income_id=other_income.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this other income record?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                <a href="{{ url_for('print_other_income_receipt', income_id=other_income.id) }}" class="btn btn-sm btn-outline-success" title="Print Receipt" target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function printSearchResults() {
+    const printContent = document.querySelector('.table-responsive').outerHTML;
+    const searchParams = new URLSearchParams(window.location.search);
+    const studentName = searchParams.get('student_name') || 'All';
+    const formClass = searchParams.get('form_class') || 'All';
+    const depositRef = searchParams.get('deposit_ref') || 'All';
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Payment Records Search Results</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .search-params { margin-bottom: 20px; }
+                .search-params p { margin: 5px 0; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f8f9fa; }
+                .text-end { text-align: right; }
+                .btn { display: none; }
+            </style>
+        </head>
+        <body>
+            <h2>Payment Records - Search Results</h2>
+            <div class="search-params">
+                <p><strong>Student Name:</strong> ${studentName}</p>
+                <p><strong>Class/Form:</strong> ${formClass}</p>
+                <p><strong>Deposit Ref:</strong> ${depositRef}</p>
+            </div>
+            ${printContent}
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = Array.from(document.querySelectorAll('.select-income-receipt'));
+    const selectAll = document.getElementById('income_select_all');
+    const printBtn = document.getElementById('print4UpBtn');
+    const form = document.getElementById('incomeMultiPrintForm');
+    const inputsContainer = document.getElementById('incomeMultiPrintInputs');
+
+    function update() {
+        const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.dataset.studentId);
+        printBtn.disabled = selected.length === 0;
+        return selected;
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const checked = this.checked;
+            let count = 0;
+            for (const cb of checkboxes) {
+                if (checked && count >= 4) { cb.checked = false; continue; }
+                cb.checked = checked;
+                if (cb.checked) count++;
+            }
+            update();
+        });
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', function() {
+        const selCount = checkboxes.filter(c => c.checked).length;
+        if (selCount > 4) { this.checked = false; alert('Select up to 4 students only.'); return; }
+        update();
+    }));
+
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            const selected = update();
+            if (selected.length === 0) { alert('Select at least one student to print receipts.'); return; }
+            // Clear previous inputs
+            inputsContainer.innerHTML = '';
+            selected.slice(0,4).forEach(id => {
+                const inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = 'student_id';
+                inp.value = id;
+                inputsContainer.appendChild(inp);
+            });
+            form.submit();
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Expenditure - {{ school_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-arrow-down me-2"></i>Expenditure</h2>
+    <div>
+        <a href="{{ url_for('print_expenditure') }}" class="btn btn-outline-dark me-2" target="_blank">
+            <i class="fas fa-print me-1"></i>Print Expenditure
+        </a>
+        <a href="{{ url_for('add_expenditure') }}" class="btn btn-warning">
+            <i class="fas fa-plus me-1"></i>Add Expenditure
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="expenditureTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pta-tab" data-bs-toggle="tab" data-bs-target="#pta" type="button" role="tab">PTA Expenditure</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="sdf-tab" data-bs-toggle="tab" data-bs-target="#sdf" type="button" role="tab">SDF Expenditure</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="boarding-tab" data-bs-toggle="tab" data-bs-target="#boarding" type="button" role="tab">Boarding Fee Expenditure</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="other-tab" data-bs-toggle="tab" data-bs-target="#other" type="button" role="tab">Other Income Expenditure</button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="expenditureTabContent">
+            <div class="tab-pane fade show active" id="pta" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5>MK {{ pta_collected|comma }}</h5>
+                                <p class="mb-0">PTA Collected</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5>MK {{ pta_expenditure|comma }}</h5>
+                                <p class="mb-0">PTA Spent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Voucher No</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenditures %}
+                                {% if exp.fund_type == 'PTA' %}
+                                <tr>
+                                    <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ exp.activity_service }}</td>
+                                    <td>{{ exp.voucher_no or 'N/A' }}</td>
+                                    <td>MK {{ exp.amount_paid|comma }}</td>
+                                    <td>
+                                        <a href="{{ url_for('edit_expenditure', expenditure_id=exp.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <form method="POST" action="{{ url_for('delete_expenditure', expenditure_id=exp.id) }}" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No PTA expenditures recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="sdf" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5>MK {{ sdf_collected|comma }}</h5>
+                                <p class="mb-0">SDF Collected</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5>MK {{ sdf_expenditure|comma }}</h5>
+                                <p class="mb-0">SDF Spent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Voucher No</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenditures %}
+                                {% if exp.fund_type == 'SDF' %}
+                                <tr>
+                                    <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ exp.activity_service }}</td>
+                                    <td>{{ exp.voucher_no or 'N/A' }}</td>
+                                    <td>MK {{ exp.amount_paid|comma }}</td>
+                                    <td>
+                                        <a href="{{ url_for('edit_expenditure', expenditure_id=exp.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <form method="POST" action="{{ url_for('delete_expenditure', expenditure_id=exp.id) }}" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No SDF expenditures recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="boarding" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5>MK {{ boarding_collected|comma }}</h5>
+                                <p class="mb-0">Boarding Collected</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5>MK {{ boarding_expenditure|comma }}</h5>
+                                <p class="mb-0">Boarding Spent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Voucher No</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenditures %}
+                                {% if exp.fund_type == 'Boarding' %}
+                                <tr>
+                                    <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ exp.activity_service }}</td>
+                                    <td>{{ exp.voucher_no or 'N/A' }}</td>
+                                    <td>MK {{ exp.amount_paid|comma }}</td>
+                                    <td>
+                                        <a href="{{ url_for('edit_expenditure', expenditure_id=exp.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <form method="POST" action="{{ url_for('delete_expenditure', expenditure_id=exp.id) }}" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No Boarding expenditures recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="other" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5>MK {{ other_income_collected|comma }}</h5>
+                                <p class="mb-0">Other Income Collected</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5>MK {{ other_income_expenditure|comma }}</h5>
+                                <p class="mb-0">Other Income Spent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Voucher No</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenditures %}
+                                {% if exp.fund_type == 'Other Income' %}
+                                <tr>
+                                    <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ exp.activity_service }}</td>
+                                    <td>{{ exp.voucher_no or 'N/A' }}</td>
+                                    <td>MK {{ exp.amount_paid|comma }}</td>
+                                    <td>
+                                        <a href="{{ url_for('edit_expenditure', expenditure_id=exp.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <form method="POST" action="{{ url_for('delete_expenditure', expenditure_id=exp.id) }}" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No Other Income expenditures recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

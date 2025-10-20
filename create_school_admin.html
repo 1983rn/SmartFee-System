@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Create School Administrator - CWED RN-SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-plus me-2"></i>Create School Administrator</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-plus me-2"></i>Add New School Administrator</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="school_name" class="form-label">School Name</label>
+                        <input type="text" class="form-control" id="school_name" name="school_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Administrator Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Temporary Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Administrator will be prompted to change this on first login</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Create Administrator
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-school me-2"></i>Existing Schools</h5>
+            </div>
+            <div class="card-body">
+                {% if schools %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>School Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school in schools %}
+                                <tr>
+                                    <td>{{ school.school_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if school.is_active else 'secondary' }}">
+                                            {{ 'Active' if school.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ school.created_at.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-school fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No schools created yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

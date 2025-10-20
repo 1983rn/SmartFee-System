@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Receipt - {{ school_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+        }
+        .receipt {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            padding: 20px;
+        }
+        .header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+        .receipt-number-stamp {
+            position: absolute;
+            top: 0;
+            right: 0;
+            border: 3px solid #d63384;
+            padding: 15px;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            transform: rotate(-5deg);
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+            color: #d63384;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header h2 {
+            margin: 5px 0;
+            font-size: 18px;
+            color: #666;
+        }
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .receipt-info div {
+            flex: 1;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .details-table th,
+        .details-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        .details-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .total-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #333;
+        }
+        .status-box {
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+            font-size: 12px;
+            color: #666;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 10px;
+            }
+            .receipt {
+                border: 2px solid #000;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <!-- Header -->
+        <div class="header">
+            <div class="receipt-number-stamp">
+                <div style="text-align: center;">
+                    <strong>RECEIPT NO.</strong><br>
+                    <span style="font-size: 18px;">{{ other_income.generate_receipt_number() }}</span>
+                </div>
+            </div>
+            <div style="margin-right: 120px;">
+                <h1>{{ school_name }}</h1>
+                {% if school_address %}
+                <p style="margin: 5px 0; color: #666;">{{ school_address }}</p>
+                {% endif %}
+                <h2>GENERAL RECEIPT</h2>
+            </div>
+        </div>
+
+        <!-- Receipt Information -->
+        <div class="receipt-info">
+            <div>
+                <p><strong>Date:</strong> {{ other_income.date.strftime('%B %d, %Y') }}</p>
+                <p><strong>Customer:</strong> {{ other_income.customer_name }}</p>
+            </div>
+            <div>
+                <p><strong>Income Type:</strong> {{ other_income.income_type }}</p>
+                <p><strong>Receipt Date:</strong> {{ datetime.now().strftime('%B %d, %Y') }}</p>
+            </div>
+        </div>
+
+        <!-- Payment Details Table -->
+        <table class="details-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="text-right">Total Charge</th>
+                    <th class="text-right">Amount Paid</th>
+                    <th class="text-right">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ other_income.income_type }} - {{ other_income.customer_name }}</td>
+                    <td class="text-right">MK{{ '{:,.2f}'.format(other_income.total_charge) }}</td>
+                    <td class="text-right">MK{{ '{:,.2f}'.format(other_income.amount_paid) }}</td>
+                    <td class="text-right">MK{{ '{:,.2f}'.format(other_income.balance) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Total Section -->
+        <div class="total-section">
+            <div class="status-box">
+                <strong>Payment Status:</strong>
+                {% if other_income.balance == 0 %}
+                    Paid in Full
+                {% else %}
+                    Outstanding Balance: MK{{ '{:,.2f}'.format(other_income.balance) }}
+                {% endif %}
+            </div>
+            <div>
+                <p><strong>Total Amount Paid:</strong></p>
+                <h3 style="margin: 5px 0;">MK{{ '{:,.2f}'.format(other_income.amount_paid) }}</h3>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            {% if school_address %}
+            <p style="margin-bottom: 10px;"><strong>School Address:</strong> {{ school_address }}</p>
+            {% endif %}
+            <p>Generated by RN_LAB_TECH</p>
+            <p>{{ datetime.now().strftime('%B %d, %Y at %I:%M %p') }}</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print when page loads
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>

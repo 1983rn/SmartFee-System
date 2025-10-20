@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expenditure - SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-minus-circle me-2"></i>Add Expenditure</h2>
+    <a href="{{ url_for('expenditure') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Expenditure
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Expenditure Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="date" name="date" 
+                                       value="{{ datetime.now().strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fund_type" class="form-label">Fund Type *</label>
+                                <select class="form-select" id="fund_type" name="fund_type" required>
+                                    <option value="">Select Fund Type</option>
+                                    <option value="PTA">PTA Fund</option>
+                                    <option value="SDF">SDF</option>
+                                    <option value="Boarding">Boarding Fee</option>
+                                    <option value="Other Income">Other Income</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="activity_service" class="form-label">Activity/Service *</label>
+                        <select class="form-select" id="activity_service" name="activity_service" required>
+                            <option value="">Select Activity/Service</option>
+                            <optgroup label="(A). Facilitating Office Operations">
+                                <option value="1203 public transport">1203 - Public Transport</option>
+                                <option value="1401 heating and lighting">1401 - Heating and Lighting</option>
+                                <option value="1402 Telephone charges">1402 - Telephone Charges</option>
+                                <option value="1405 water and sanitation">1405 - Water and Sanitation</option>
+                                <option value="1502 consumable stores">1502 - Consumable Stores</option>
+                                <option value="1504 postage">1504 - Postage</option>
+                                <option value="1505 printing cost">1505 - Printing Cost</option>
+                                <option value="1406 publication and advertisement">1406 - Publication and Advertisement</option>
+                                <option value="1506 stationery">1506 - Stationery</option>
+                                <option value="1507 uniform and protective wear">1507 - Uniform and Protective Wear</option>
+                                <option value="2401 Fuel and Lubricants">2401 - Fuel and Lubricants</option>
+                                <option value="2321 Subscriptions">2321 - Subscriptions</option>
+                                <option value="0251 purchase of plant and office equipment">0251 - Purchase of Plant and Office Equipment</option>
+                            </optgroup>
+                            <optgroup label="(B). Management of School Based and National Examinations">
+                                <option value="1803-examinations">1803 - Examinations</option>
+                                <option value="2401 fuel or 1203 public transport">2401 - Fuel or 1203 - Public Transport</option>
+                                <option value="1204 Subsistence allowance">1204 - Subsistence Allowance</option>
+                            </optgroup>
+                            <optgroup label="(C). SMASSE">
+                                <option value="2401 fuel or 1203 public transport">2401 - Fuel or 1203 - Public Transport</option>
+                                <option value="1204 Subsistence allowance">1204 - Subsistence Allowance</option>
+                            </optgroup>
+                            <optgroup label="(D). Sporting Activities">
+                                <option value="1805-sporting equipment">1805 - Sporting Equipment</option>
+                                <option value="2401 fuel or 1203 public transport">2401 - Fuel or 1203 - Public Transport</option>
+                                <option value="1204 Subsistence allowance">1204 - Subsistence Allowance</option>
+                            </optgroup>
+                            <optgroup label="(E). Support to SNE">
+                                <option value="1806- purchase of special needs materials">1806 - Purchase of Special Needs Materials</option>
+                            </optgroup>
+                            <optgroup label="(F). Procurement of Teaching and Learning Materials">
+                                <option value="1807- science consumables">1807 - Science Consumables</option>
+                                <option value="1804- text books">1804 - Text Books</option>
+                                <option value="1808- purchase of school supplies">1808 - Purchase of School Supplies</option>
+                                <option value="1614- HIV/AIDS services">1614 - HIV/AIDS Services</option>
+                                <option value="1601- drugs">1601 - Drugs</option>
+                            </optgroup>
+                            <optgroup label="(G). Maintenance of Infrastructure">
+                                <option value="2501- maintenance of buildings">2501 - Maintenance of Buildings</option>
+                                <option value="2504-maintenance of water supplies">2504 - Maintenance of Water Supplies</option>
+                            </optgroup>
+                            <optgroup label="(H). COSOMA">
+                                <option value="2321- Subscription">2321 - Subscription</option>
+                            </optgroup>
+                            <optgroup label="Computer Service Subscription">
+                                <option value="2321- Subscription">2321 - Subscription</option>
+                            </optgroup>
+                            <optgroup label="(I). In-service Training for Teachers">
+                                <option value="1502- consumables">1502 - Consumables</option>
+                                <option value="1204- subsistence Allowances">1204 - Subsistence Allowances</option>
+                                <option value="1203 public transport or 2401 fuel">1203 - Public Transport or 2401 - Fuel</option>
+                            </optgroup>
+                            <optgroup label="(J). Processing of Payment Vouchers">
+                                <option value="1204- subsistence Allowances">1204 - Subsistence Allowances</option>
+                                <option value="1203 public transport or 2401 fuel">1203 - Public Transport or 2401 - Fuel</option>
+                            </optgroup>
+                            <optgroup label="(K). Provision of Sanitary Pads to Girls in Secondary Schools">
+                                <option value="1502- consumables">1502 - Consumables</option>
+                            </optgroup>
+                            <optgroup label="(L). Provision of PPEs to Schools">
+                                <option value="1502- consumables">1502 - Consumables</option>
+                            </optgroup>
+                            <optgroup label="(M). Provision of Food and Other Boarding Necessities to Learners">
+                                <option value="1801- boarding expenses">1801 - Boarding Expenses</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="voucher_no" class="form-label">Voucher No.</label>
+                                <input type="text" class="form-control" id="voucher_no" name="voucher_no" 
+                                       placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="cheque_no" class="form-label">Cheque No.</label>
+                                <input type="text" class="form-control" id="cheque_no" name="cheque_no" 
+                                       placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="amount_paid" class="form-label">Amount Paid (MK) *</label>
+                                <input type="number" step="0.01" class="form-control" id="amount_paid" 
+                                       name="amount_paid" required min="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary me-md-2" onclick="history.back()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-save me-2"></i>Add Expenditure
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

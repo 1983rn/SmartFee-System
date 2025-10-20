@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}School Configuration - {{ school_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-school me-2"></i>School Configuration</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>School Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label for="school_name" class="form-label">School Name</label>
+                        <input type="text" class="form-control" id="school_name" name="school_name" 
+                               value="{{ current_config.school_name }}" required>
+                        <div class="form-text">This name will appear at the top of every page and on all reports.</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="school_address" class="form-label">School Address</label>
+                        <textarea class="form-control" id="school_address" name="school_address" rows="3">{{ current_config.school_address or '' }}</textarea>
+                        <div class="form-text">Physical address of the school (optional).</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="head_teacher_contact" class="form-label">Head Teacher Contact</label>
+                            <input type="text" class="form-control" id="head_teacher_contact" name="head_teacher_contact" 
+                                   value="{{ current_config.head_teacher_contact or '' }}" placeholder="Phone or Email">
+                            <div class="form-text">Contact information for the head teacher (optional).</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="bursar_contact" class="form-label">Bursar Contact</label>
+                            <input type="text" class="form-control" id="bursar_contact" name="bursar_contact" 
+                                   value="{{ current_config.bursar_contact or '' }}" placeholder="Phone or Email">
+                            <div class="form-text">Contact information for the bursar (optional).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="school_email" class="form-label">School Email</label>
+                        <input type="email" class="form-control" id="school_email" name="school_email" 
+                               value="{{ current_config.school_email or '' }}" placeholder="school@example.com">
+                        <div class="form-text">Official school email address (optional).</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Current Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Current School Name</label>
+                    <div class="h5 text-primary">{{ current_config.school_name }}</div>
+                </div>
+                
+                {% if current_config.school_address %}
+                <div class="mb-3">
+                    <label class="form-label">School Address</label>
+                    <div class="text-muted">{{ current_config.school_address }}</div>
+                </div>
+                {% endif %}
+                
+                {% if current_config.head_teacher_contact %}
+                <div class="mb-3">
+                    <label class="form-label">Head Teacher Contact</label>
+                    <div class="text-muted">{{ current_config.head_teacher_contact }}</div>
+                </div>
+                {% endif %}
+                
+                {% if current_config.bursar_contact %}
+                <div class="mb-3">
+                    <label class="form-label">Bursar Contact</label>
+                    <div class="text-muted">{{ current_config.bursar_contact }}</div>
+                </div>
+                {% endif %}
+                
+                {% if current_config.school_email %}
+                <div class="mb-3">
+                    <label class="form-label">School Email</label>
+                    <div class="text-muted">{{ current_config.school_email }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Last Updated</label>
+                    <div class="text-muted">{{ (current_config.updated_at or current_config.created_at).strftime('%B %d, %Y at %I:%M %p') }}</div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> The school name will automatically appear on all pages, reports, and receipts throughout the system.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

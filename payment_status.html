@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Status - CWED RN-SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-credit-card me-2"></i>Payment Status</h2>
+    <div>
+        <button id="ps_print4UpBtn" class="btn btn-primary me-2" disabled>
+            <i class="fas fa-print me-2"></i>Print 4-Up Receipts
+        </button>
+        <button onclick="sendSMSReminders()" class="btn btn-warning">
+            <i class="fas fa-sms me-2"></i>Send SMS Reminders
+        </button>
+    </div>
+</div>
+
+ 
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>Students Paid in Full</h5>
+                <h3>{{ paid_in_full|length }}</h3>
+                <p class="mb-0">All fees completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>Outstanding Payments</h5>
+                <h3>{{ outstanding|length }}</h3>
+                <p class="mb-0">Partial or no payments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Paid in Full Students -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5><i class="fas fa-check-circle me-2"></i>Students Paid in Full</h5>
+    </div>
+    <div class="card-body">
+        {% if paid_in_full %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="width:40px;"><input type="checkbox" id="ps_select_all"></th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Form/Class</th>
+                        <th>PTA Status</th>
+                        <th>SDF Status</th>
+                        <th>Boarding Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in paid_in_full %}
+                    <tr>
+                        <td><input type="checkbox" class="form-check-input ps-select-receipt" data-student-id="{{ student.decrypted_student_id }}"></td>
+                        <td><strong>{{ student.decrypted_student_id }}</strong></td>
+                        <td>{{ student.decrypted_name }}</td>
+                        <td>{{ student.decrypted_form_class }}</td>
+                        <td><span class="badge bg-success">Paid</span></td>
+                        <td><span class="badge bg-success">Paid</span></td>
+                        <td><span class="badge bg-success">Paid</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Hidden form for multi-print from payment status -->
+        <form id="psMultiPrintForm" action="{{ url_for('print_multiple_receipts') }}" method="GET" target="_blank" style="display:none;">
+            <input type="hidden" name="student_id" id="psMultiPrintStudentIds">
+        </form>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+            <p class="text-muted">No students have completed all payments yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Outstanding Payments -->
+<div class="card">
+    <div class="card-header bg-warning text-white">
+        <h5><i class="fas fa-exclamation-triangle me-2"></i>Outstanding Payments</h5>
+    </div>
+    <div class="card-body">
+        {% if outstanding %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Form/Class</th>
+                        <th>Parent Phone</th>
+                        <th>PTA Balance</th>
+                        <th>SDF Balance</th>
+                        <th>Boarding Balance</th>
+                        <th>Total Outstanding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in outstanding %}
+                    <tr>
+                        <td><strong>{{ student.decrypted_student_id }}</strong></td>
+                        <td>{{ student.decrypted_name }}</td>
+                        <td>{{ student.decrypted_form_class }}</td>
+                        <td>{{ student.decrypted_parent_phone or 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if student.get_pta_balance() == 0 else 'danger' }}">
+                                MK{{ "%.2f"|format(student.get_pta_balance()) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if student.get_sdf_balance() == 0 else 'danger' }}">
+                                MK{{ "%.2f"|format(student.get_sdf_balance()) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if student.get_boarding_balance() == 0 else 'danger' }}">
+                                MK{{ "%.2f"|format(student.get_boarding_balance()) }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong class="text-danger">
+                                MK{{ "%.2f"|format(student.get_pta_balance() + student.get_sdf_balance() + student.get_boarding_balance()) }}
+                            </strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <p class="text-success">All students have completed their payments!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// The 4-up receipt printing feature was removed. Keep SMS reminder helper below.
+// Add any future selection logic here if needed.
+
+function sendSMSReminders() {
+    alert('SMS reminders would be sent to parents with outstanding balances. In production, integrate with SMS service like Twilio.');
+}
+</script>
+
+<style>
+/* Style for checkboxes in tables */
+table input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Ensure table headers with checkboxes align properly */
+thead th:first-child {
+    width: 40px;
+}
+
+/* Note: print 4-up receipts button removed; styles for it were deleted. */
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = Array.from(document.querySelectorAll('.ps-select-receipt'));
+    const selectAll = document.getElementById('ps_select_all');
+    const printBtn = document.getElementById('ps_print4UpBtn');
+    const form = document.getElementById('psMultiPrintForm');
+        const inputsContainer = document.getElementById('psMultiPrintInputs');
+
+    function update() {
+        const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.dataset.studentId);
+        printBtn.disabled = selected.length === 0;
+        return selected;
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const checked = this.checked;
+            let count = 0;
+            for (const cb of checkboxes) {
+                if (checked && count >= 4) { cb.checked = false; continue; }
+                cb.checked = checked;
+                if (cb.checked) count++;
+            }
+            update();
+        });
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', function() {
+        const selCount = checkboxes.filter(c => c.checked).length;
+        if (selCount > 4) { this.checked = false; alert('Select up to 4 students only.'); return; }
+        update();
+    }));
+
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            const selected = update();
+            if (selected.length === 0) { alert('Select at least one student to print receipts.'); return; }
+            hiddenInput.value = selected.slice(0,4).join(',');
+                inputsContainer.innerHTML = '';
+                selected.slice(0,4).forEach(id => {
+                    const inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = 'student_id';
+                    inp.value = id;
+                    inputsContainer.appendChild(inp);
+                });
+                form.submit();
+        });
+    }
+});
+</script>
+{% endblock %}

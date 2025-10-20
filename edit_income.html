@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Payment - CWED RN-SmartFee System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit me-2"></i>Edit Payment Information</h2>
+    <a href="{{ url_for('income') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Income
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Student Information (Read Only)</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Student ID:</strong> {{ student.decrypted_student_id }}
+            </div>
+            <div class="col-md-4">
+                <strong>Name:</strong> {{ student.decrypted_name }}
+            </div>
+            <div class="col-md-4">
+                <strong>Class:</strong> {{ student.decrypted_form_class }}
+            </div>
+        </div>
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            To edit Student ID or Name, please use the Students tab.
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Edit Payment Amounts</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="pta_amount_paid" class="form-label">PTA Amount Paid (MK)</label>
+                        <input type="number" step="0.01" class="form-control" id="pta_amount_paid" 
+                               name="pta_amount_paid" value="{{ student.pta_amount_paid }}" min="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="sdf_amount_paid" class="form-label">SDF Amount Paid (MK)</label>
+                        <input type="number" step="0.01" class="form-control" id="sdf_amount_paid" 
+                               name="sdf_amount_paid" value="{{ student.sdf_amount_paid }}" min="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="boarding_amount_paid" class="form-label">Boarding Amount Paid (MK)</label>
+                        <input type="number" step="0.01" class="form-control" id="boarding_amount_paid" 
+                               name="boarding_amount_paid" value="{{ student.boarding_amount_paid }}" min="0">
+                    </div>
+                </div>
+            </div>
+            
+
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Update Payment Information
+                </button>
+                <a href="{{ url_for('income') }}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Current Payment Summary</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <h6>PTA Balance</h6>
+                    <span class="badge bg-info fs-6">MK {{ student.get_pta_balance()|comma }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <h6>SDF Balance</h6>
+                    <span class="badge bg-warning fs-6">MK {{ student.get_sdf_balance()|comma }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <h6>Boarding Balance</h6>
+                    <span class="badge bg-secondary fs-6">MK {{ student.get_boarding_balance()|comma }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

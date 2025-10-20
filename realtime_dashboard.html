@@ -1,0 +1,334 @@
+<!-- Real-time Dashboard Enhancement -->
+<script>
+// Real-time dashboard updates
+class DashboardUpdater {
+    constructor() {
+        this.updateInterval = 30000; // 30 seconds
+        this.intervalId = null;
+        this.isUpdating = false;
+        this.lastUpdate = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.startAutoUpdate();
+        this.setupManualRefresh();
+        this.setupVisibilityChange();
+    }
+    
+    startAutoUpdate() {
+        this.intervalId = setInterval(() => {
+            this.updateDashboard();
+        }, this.updateInterval);
+        
+        // Initial update
+        this.updateDashboard();
+    }
+    
+    stopAutoUpdate() {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+    }
+    
+    setupManualRefresh() {
+        // Add refresh button to dashboard
+        const dashboardHeader = document.querySelector('h2');
+        if (dashboardHeader) {
+            const refreshBtn = document.createElement('button');
+            refreshBtn.className = 'btn btn-outline-primary btn-sm ms-3';
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Refresh';
+            refreshBtn.onclick = () => this.updateDashboard(true);
+            dashboardHeader.appendChild(refreshBtn);
+        }
+        
+        // Add last updated indicator
+        const lastUpdateDiv = document.createElement('div');
+        lastUpdateDiv.id = 'lastUpdateIndicator';
+        lastUpdateDiv.className = 'text-muted small mt-2';
+        lastUpdateDiv.innerHTML = '<i class="fas fa-clock me-1"></i>Loading...';
+        
+        const dateDiv = document.querySelector('.text-muted');
+        if (dateDiv && dateDiv.parentNode) {
+            dateDiv.parentNode.appendChild(lastUpdateDiv);
+        }
+    }
+    
+    setupVisibilityChange() {
+        // Pause updates when tab is not visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.stopAutoUpdate();
+            } else {
+                this.startAutoUpdate();
+            }
+        });
+    }
+    
+    async updateDashboard(manual = false) {
+        if (this.isUpdating && !manual) return;
+        
+        this.isUpdating = true;
+        this.showUpdateIndicator();
+        
+        try {
+            const response = await fetch('/api/dashboard/stats');
+            if (!response.ok) {
+                throw new Error('Failed to fetch dashboard data');
+            }
+            
+            const data = await response.json();
+            this.updateDashboardElements(data);
+            this.lastUpdate = new Date();
+            this.updateLastUpdateIndicator();
+            
+        } catch (error) {
+            console.error('Dashboard update failed:', error);
+            this.showUpdateError();
+        } finally {
+            this.isUpdating = false;
+            this.hideUpdateIndicator();
+        }
+    }
+    
+    updateDashboardElements(data) {
+        // Update statistics cards
+        this.updateStatCard('total_students', data.total_students);
+        this.updateStatCard('paid_in_full', data.paid_in_full);
+        this.updateStatCard('outstanding_count', data.outstanding_count);
+        this.updateStatCard('today_net', `MK${data.today_net.toLocaleString()}`);
+        
+        // Update today's income and expenditure
+        this.updateIncomeExpenditure(data.today_income, data.today_expenditure);
+        
+        // Update completion rate if element exists
+        const completionRate = document.getElementById('completionRate');
+        if (completionRate) {
+            completionRate.textContent = `${data.payment_completion_rate}%`;
+        }
+        
+        // Trigger visual feedback for changes
+        this.highlightChanges();
+    }
+    
+    updateStatCard(cardType, value) {
+        const cards = document.querySelectorAll('.dashboard-card');
+        cards.forEach(card => {
+            const h4 = card.querySelector('h4');
+            if (h4) {
+                const currentValue = h4.textContent.replace(/[^\d.-]/g, '');
+                const newValue = value.toString().replace(/[^\d.-]/g, '');
+                
+                if (currentValue !== newValue) {
+                    h4.textContent = value;
+                    this.animateChange(h4);
+                }
+            }
+        });
+    }
+    
+    updateIncomeExpenditure(income, expenditure) {
+        // Update today's income
+        const incomeElement = document.querySelector('.text-success h3');
+        if (incomeElement) {
+            const newValue = `MK${income.toLocaleString()}`;
+            if (incomeElement.textContent !== newValue) {
+                incomeElement.textContent = newValue;
+                this.animateChange(incomeElement);
+            }
+        }
+        
+        // Update today's expenditure
+        const expenditureElement = document.querySelector('.text-danger h3');
+        if (expenditureElement) {
+            const newValue = `MK${expenditure.toLocaleString()}`;
+            if (expenditureElement.textContent !== newValue) {
+                expenditureElement.textContent = newValue;
+                this.animateChange(expenditureElement);
+            }
+        }
+    }
+    
+    animateChange(element) {
+        element.style.transition = 'all 0.3s ease';
+        element.style.transform = 'scale(1.1)';
+        element.style.color = '#28a745';
+        
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            element.style.color = '';
+        }, 300);
+    }
+    
+    highlightChanges() {
+        // Add subtle pulse animation to updated cards
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.style.animation = 'pulse 0.5s ease-in-out';
+        });
+        
+        setTimeout(() => {
+            cards.forEach(card => {
+                card.style.animation = '';
+            });
+        }, 500);
+    }
+    
+    showUpdateIndicator() {
+        const indicator = document.getElementById('lastUpdateIndicator');
+        if (indicator) {
+            indicator.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Updating...';
+            indicator.className = 'text-primary small mt-2';
+        }
+    }
+    
+    hideUpdateIndicator() {
+        // Will be updated by updateLastUpdateIndicator
+    }
+    
+    updateLastUpdateIndicator() {
+        const indicator = document.getElementById('lastUpdateIndicator');
+        if (indicator && this.lastUpdate) {
+            const timeStr = this.lastUpdate.toLocaleTimeString();
+            indicator.innerHTML = `<i class="fas fa-check-circle me-1"></i>Last updated: ${timeStr}`;
+            indicator.className = 'text-success small mt-2';
+        }
+    }
+    
+    showUpdateError() {
+        const indicator = document.getElementById('lastUpdateIndicator');
+        if (indicator) {
+            indicator.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Update failed';
+            indicator.className = 'text-danger small mt-2';
+        }
+    }
+}
+
+// Enhanced dashboard modal functions with real-time data
+async function showStudentDetails(type) {
+    const modal = new bootstrap.Modal(document.getElementById('dashboardModal'));
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    // Set modal title based on type
+    const titles = {
+        'total': 'All Students',
+        'paid': 'Students Paid in Full',
+        'outstanding': 'Students with Outstanding Balances'
+    };
+    modalTitle.textContent = titles[type] || 'Student Details';
+    
+    // Show loading
+    modalBody.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading student data...</p>
+        </div>
+    `;
+    modal.show();
+    
+    try {
+        const response = await fetch(`/api/student_details/${type}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch student details');
+        }
+        
+        const data = await response.json();
+        renderStudentList(data.students, modalBody);
+        
+    } catch (error) {
+        modalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> ${error.message}
+            </div>
+        `;
+    }
+}
+
+function renderStudentList(students, container) {
+    if (students.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+                <p class="text-muted">No students found in this category</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Form/Class</th>
+                        <th>PTA Status</th>
+                        <th>SDF Status</th>
+                        <th>Boarding Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    students.forEach(student => {
+        html += `
+            <tr>
+                <td><strong>${student.student_id}</strong></td>
+                <td>${student.name}</td>
+                <td><span class="badge bg-secondary">${student.form_class}</span></td>
+                <td><span class="badge bg-${student.pta_status === 'Paid' ? 'success' : 'warning'}">MK${student.pta_amount_paid}</span></td>
+                <td><span class="badge bg-${student.sdf_status === 'Paid' ? 'success' : 'warning'}">MK${student.sdf_amount_paid}</span></td>
+                <td><span class="badge bg-${student.boarding_status === 'Paid' ? 'success' : 'warning'}">MK${student.boarding_amount_paid || 0}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewStudent('${student.student_id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// Initialize dashboard updater when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname === '/' || window.location.pathname.includes('index')) {
+        window.dashboardUpdater = new DashboardUpdater();
+    }
+});
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+    }
+    
+    .dashboard-card {
+        transition: transform 0.2s ease;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+`;
+document.head.appendChild(style);
+</script>

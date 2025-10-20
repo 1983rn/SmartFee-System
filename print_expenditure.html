@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expenditure Report - {{ school_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .summary { margin-bottom: 30px; }
+        .summary-card { display: inline-block; margin: 10px; padding: 15px; border: 1px solid #ddd; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .fund-section { margin-bottom: 30px; }
+        .fund-title { background-color: #f8f9fa; padding: 10px; margin-bottom: 10px; font-weight: bold; }
+        .total-row { font-weight: bold; background-color: #f9f9f9; }
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" class="btn btn-primary">Print</button>
+        <button onclick="window.close()" class="btn btn-secondary">Close</button>
+    </div>
+
+    <div class="header">
+        <h1>{{ school_name }}</h1>
+        <h2>Expenditure Report</h2>
+        <p>Generated on: {{ datetime.now().strftime('%B %d, %Y at %I:%M %p') }}</p>
+    </div>
+
+    <div class="summary">
+        <h3>Expenditure Summary</h3>
+        <div class="summary-card">
+            <h4>MK {{ pta_expenditure|comma }}</h4>
+            <p>PTA Expenditure</p>
+        </div>
+        <div class="summary-card">
+            <h4>MK {{ sdf_expenditure|comma }}</h4>
+            <p>SDF Expenditure</p>
+        </div>
+        <div class="summary-card">
+            <h4>MK {{ boarding_expenditure|comma }}</h4>
+            <p>Boarding Expenditure</p>
+        </div>
+        <div class="summary-card">
+            <h4>MK {{ other_expenditure|comma }}</h4>
+            <p>Other Income Expenditure</p>
+        </div>
+        <div class="summary-card" style="background-color: #ffebee;">
+            <h4>MK {{ total_expenditure|comma }}</h4>
+            <p>Total Expenditure</p>
+        </div>
+    </div>
+
+    <!-- PTA Expenditures -->
+    <div class="fund-section">
+        <div class="fund-title">PTA EXPENDITURES</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Voucher No</th>
+                    <th>Cheque No</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set pta_total = 0 %}
+                {% for exp in expenditures %}
+                    {% if exp.fund_type == 'PTA' %}
+                        {% set pta_total = pta_total + exp.amount_paid %}
+                        <tr>
+                            <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ exp.activity_service }}</td>
+                            <td>{{ exp.voucher_no or 'N/A' }}</td>
+                            <td>{{ exp.cheque_no or 'N/A' }}</td>
+                            <td>MK {{ exp.amount_paid|comma }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="4">PTA TOTAL</td>
+                    <td>MK {{ pta_expenditure|comma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SDF Expenditures -->
+    <div class="fund-section">
+        <div class="fund-title">SDF EXPENDITURES</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Voucher No</th>
+                    <th>Cheque No</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in expenditures %}
+                    {% if exp.fund_type == 'SDF' %}
+                        <tr>
+                            <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ exp.activity_service }}</td>
+                            <td>{{ exp.voucher_no or 'N/A' }}</td>
+                            <td>{{ exp.cheque_no or 'N/A' }}</td>
+                            <td>MK {{ exp.amount_paid|comma }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="4">SDF TOTAL</td>
+                    <td>MK {{ sdf_expenditure|comma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Boarding Expenditures -->
+    <div class="fund-section">
+        <div class="fund-title">BOARDING EXPENDITURES</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Voucher No</th>
+                    <th>Cheque No</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in expenditures %}
+                    {% if exp.fund_type == 'Boarding' %}
+                        <tr>
+                            <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ exp.activity_service }}</td>
+                            <td>{{ exp.voucher_no or 'N/A' }}</td>
+                            <td>{{ exp.cheque_no or 'N/A' }}</td>
+                            <td>MK {{ exp.amount_paid|comma }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="4">BOARDING TOTAL</td>
+                    <td>MK {{ boarding_expenditure|comma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Other Income Expenditures -->
+    <div class="fund-section">
+        <div class="fund-title">OTHER INCOME EXPENDITURES</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Voucher No</th>
+                    <th>Cheque No</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in expenditures %}
+                    {% if exp.fund_type == 'Other Income' %}
+                        <tr>
+                            <td>{{ exp.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ exp.activity_service }}</td>
+                            <td>{{ exp.voucher_no or 'N/A' }}</td>
+                            <td>{{ exp.cheque_no or 'N/A' }}</td>
+                            <td>MK {{ exp.amount_paid|comma }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="4">OTHER INCOME TOTAL</td>
+                    <td>MK {{ other_expenditure|comma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 50px; text-align: center; color: #666;">
+        <p>{{ software_name }} - Expenditure Report</p>
+    </div>
+</body>
+</html>
